@@ -87,9 +87,3 @@ export async function tokenizeSquareCard(card: any): Promise<string> {
   }
 }
 
-// Extend Window type for Square
-declare global {
-  interface Window {
-    Square: any;
-  }
-}

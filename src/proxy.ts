@@ -49,9 +49,6 @@ function handleLocale(request: NextRequest, response?: NextResponse) {
   // Redirect if there is no locale
   if (pathnameIsMissingLocale) {
     const locale = i18nConfig.defaultLocale;
-    if (pathname === '/') {
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
-    }
     return NextResponse.redirect(new URL(`/${locale}${pathname}`, request.url));
   }
 

@@ -17,12 +17,16 @@ import { redirect } from 'next/navigation';
 import ClientSessionHydrator from '@/components/shared/ClientSessionHydrator';
 import BookingNavigationGuard from '@/components/BookingNavigationGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const inter = Inter({ subsets: ['latin'] });
 
 export async function generateStaticParams() {
   return i18nConfig.locales.map((locale) => ({ locale }));
 }
+
+export const dynamicParams = false;
 
 export const metadata: Metadata = {
   title: siteConfig.name,
