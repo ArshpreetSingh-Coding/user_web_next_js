@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { i18nConfig } from './config/i18n.config';
+
+export default async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  if (
+    pathname.startsWith('/service-unavailable') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
+
+  // try {
+  //   const { runInitTasks } = await import('./lib/init/initTasks');
+  //   const initResult = await runInitTasks();
+
+  //   // If service is not available, redirect to error page
+  //   if (!initResult.serviceAvailable) {
+  //     console.error('Service unavailable:', initResult.error);
+  //     return NextResponse.redirect(new URL('/service-unavailable', request.url));
+  //   }
+
+  //   // Store Google Maps key in header for server component access
+  //   if (initResult.googleMapsKey) {
+  //     const response = handleLocale(request);
+  //     response.headers.set('x-google-maps-key', initResult.googleMapsKey);
+  //     return response;
+  //   }
+
+  // } catch (error) {
+  //   console.error('Init tasks failed:', error);
+  //   return NextResponse.redirect(new URL('/service-unavailable', request.url));
+  // }
+
+  // Default: continue with locale handling
+  return handleLocale(request);
+}
+
+function handleLocale(request: NextRequest, response?: NextResponse) {
+  const pathname = request.nextUrl.pathname;
+
+  // Check if there is any supported locale in the pathname
+  const pathnameIsMissingLocale = i18nConfig.locales.every(
+    (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+  );
+  // Redirect if there is no locale
+  if (pathnameIsMissingLocale) {
+    const locale = i18nConfig.defaultLocale;
+    if (pathname === '/') {
+      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    }
+    return NextResponse.redirect(new URL(`/${locale}${pathname}`, request.url));
+  }
+
+  return response || NextResponse.next();
+}
+
+export const config = {
+  // Matcher ignoring `/_next/` and `/api/`
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+};

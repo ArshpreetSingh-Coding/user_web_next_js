@@ -1,0 +1,79 @@
+import { useCallback } from "react";
+import { useBookingStore } from "@/stores/booking.store";
+import type { Stop } from "./types";
+import type { Location } from "@/types";
+
+export const useBookingForm = () => {
+  // Get data from Zustand store
+  const pickup = useBookingStore((state) => state.pickup);
+  const dropoff = useBookingStore((state) => state.dropoff);
+  const stops = useBookingStore((state) => state.stops);
+  const scheduledDateTime = useBookingStore((state) => state.scheduledDateTime);
+  const setPickup = useBookingStore((state) => state.setPickup);
+  const setDropoff = useBookingStore((state) => state.setDropoff);
+  const setStops = useBookingStore((state) => state.setStops);
+  const setScheduledDateTime = useBookingStore((state) => state.setScheduledDateTime);
+  const setServiceData = useBookingStore((state) => state.setServiceData);
+  const setPickupCityCurrency = useBookingStore((state) => state.setPickupCityCurrency);
+  const setPickupCityOffset = useBookingStore((state) => state.setPickupCityOffset);
+  const setSelectedService = useBookingStore((state) => state.setSelectedService);
+  const setRouteData = useBookingStore((state) => state.setRouteData);
+
+  const addStop = useCallback(() => {
+    const newStop: Stop = {
+      id: `stop-${Date.now()}`,
+      order: stops.length + 1,
+      latitude: 0,
+      longitude: 0,
+      chosen_address: "",
+    };
+    setStops([...stops, newStop]);
+  }, [stops, setStops]);
+
+  const removeStop = useCallback((id: number | string) => {
+    const updatedStops = stops
+      .filter((stop) => stop.id !== id)
+      .map((stop, index) => ({ ...stop, order: index + 1 })); // Reorder
+    setStops(updatedStops);
+  }, [stops, setStops]);
+
+  const updateStop = useCallback((id: number | string, location: Location) => {
+    const updatedStops = stops.map((stop) =>
+      stop.id === id
+        ? {
+            ...stop,
+            latitude: location.lat,
+            longitude: location.lng,
+            chosen_address: location.address,
+          }
+        : stop
+    );
+    setStops(updatedStops);
+  }, [stops, setStops]);
+
+  const resetForm = useCallback(() => {
+    setPickup(null);
+    setDropoff(null);
+    setStops([]);
+    setScheduledDateTime(null);
+  }, [setPickup, setDropoff, setStops, setScheduledDateTime]);
+
+  return {
+    pickup,
+    setPickup,
+    destination: dropoff,
+    setDestination: setDropoff,
+    setServiceData,
+    setPickupCityCurrency,
+    setPickupCityOffset,
+    setSelectedService,
+    setRouteData,
+    stops,
+    scheduledDateTime,
+    setScheduledDateTime,
+    addStop,
+    removeStop,
+    updateStop,
+    resetForm,
+  };
+};
