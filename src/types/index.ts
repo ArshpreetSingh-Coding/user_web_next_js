@@ -395,6 +395,21 @@ export interface GetTransactionHistoryResponse {
   transactions: TransactionHistoryItem[];
 }
 
+export interface RechargeWalletRequest {
+  driver_phone_no: string;
+  amount: number;
+  login_type: number;
+  payment_mode: number;
+  currency: string;
+  card_id: string | number;
+}
+
+export interface RechargeWalletResponse {
+  flag: number;
+  message: string;
+  data?: any;
+}
+
 // ======================== GOOGLE MAPS TYPES ========================
 
 export interface PlaceResult {
@@ -556,6 +571,9 @@ export interface InsertPickupScheduleRequest {
   customerNote?: string;
   preferredPaymentMode?: number; // default 1 (cash)
   cardId: any; // for card payments
+  flightNumber?: string; // for flight services
+  customerName?: string; // Book for someone else
+  customerPhoneNo?: string; // Book for someone else
 }
 
 export interface InsertPickupScheduleResponse {
@@ -634,6 +652,7 @@ export interface HistoryResponse {
   flag: number;
   message?: string;
   data: ApiRideHistoryItem[];
+  history_size?: number;
 }
 
 export interface RideSummaryRequest {

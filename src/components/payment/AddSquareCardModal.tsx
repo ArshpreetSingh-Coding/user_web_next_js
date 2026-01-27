@@ -59,7 +59,7 @@ export function AddSquareCardModal({
         try {
           cardRef.current.destroy();
         } catch (e) {
-          console.error('Error destroying Square card:', e);
+          // console.error('Error destroying Square card:', e);
         }
       }
     };

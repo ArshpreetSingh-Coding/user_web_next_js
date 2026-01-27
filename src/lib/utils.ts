@@ -57,8 +57,8 @@ export async function fetchOperatorParams(sessionDetails: any): Promise<DefaultR
       console.log("error fetchOperatorParams", error);
     }
     console.log("response fetchOperatorParams", response?.data.data.autos_panel_theme);
-    
-    
+
+
     // console.log('Fetch operator params response:', response.data);
     if (response?.status === 200) {
       return {

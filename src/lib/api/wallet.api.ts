@@ -4,7 +4,9 @@ import {
     FetchWalletBalanceRequest,
     FetchWalletBalanceResponse,
     GetTransactionHistoryRequest,
-    GetTransactionHistoryResponse
+    GetTransactionHistoryResponse,
+    RechargeWalletRequest,
+    RechargeWalletResponse
 } from '@/types';
 
 /**
@@ -43,6 +45,26 @@ export const getTransactionHistory = async (data: GetTransactionHistoryRequest):
         return response.data;
     } catch (error: any) {
         console.error('❌ Transaction History API Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+/**
+ * Recharge Wallet (Settle Negative Balance / Add Money)
+ */
+export const rechargeWallet = async (data: RechargeWalletRequest): Promise<RechargeWalletResponse> => {
+    console.log('💳 Calling settle_negative_wallet_balance API', data);
+
+    try {
+        const response = await apiClient.post<RechargeWalletResponse>(
+            API_ENDPOINTS.WALLET.SETTLE_NEGATIVE_WALLET_BALANCE,
+            data
+        );
+
+        console.log('✅ Recharge Wallet API Response:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('❌ Recharge Wallet API Error:', error.response?.data || error.message);
         throw error;
     }
 };

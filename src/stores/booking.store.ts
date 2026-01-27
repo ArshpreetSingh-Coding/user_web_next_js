@@ -44,6 +44,10 @@ interface BookingState {
   passengerCount: number;
   luggageCount: number;
   driverNote: string;
+  flightNumber: string;
+  customerName: string;
+  customerPhone: string;
+  customerCountryCode: string;
 
   // Pickup city details
   pickupCityCurrency: string | null;
@@ -95,6 +99,10 @@ interface BookingState {
   setPassengerCount: (count: number) => void;
   setLuggageCount: (count: number) => void;
   setDriverNote: (note: string) => void;
+  setFlightNumber: (flightNumber: string) => void;
+  setCustomerName: (name: string) => void;
+  setCustomerPhone: (phone: string) => void;
+  setCustomerCountryCode: (code: string) => void;
   setSelectedPaymentMethod: (method: string | null) => void;
   setSelectedCardId: (cardId: string | number | null) => void; // New action for Stripe card
   setSelectedSquareCardId: (cardId: string | number | null) => void; // New action for Square card
@@ -140,6 +148,10 @@ export const useBookingStore = create<BookingState>()(
         passengerCount: 1,
         luggageCount: 0,
         driverNote: '',
+        flightNumber: '',
+        customerName: '',
+        customerPhone: '',
+        customerCountryCode: '',
         selectedPaymentMethod: null,
         selectedCardId: null, // Initialize Stripe card ID
         selectedSquareCardId: null, // Initialize Square card ID
@@ -260,6 +272,18 @@ export const useBookingStore = create<BookingState>()(
         setDriverNote: (note) =>
           set({ driverNote: note }, false, 'booking/setDriverNote'),
 
+        setFlightNumber: (flightNumber) =>
+          set({ flightNumber: flightNumber }, false, 'booking/setFlightNumber'),
+
+        setCustomerName: (name) =>
+          set({ customerName: name }, false, 'booking/setCustomerName'),
+
+        setCustomerPhone: (phone) =>
+          set({ customerPhone: phone }, false, 'booking/setCustomerPhone'),
+
+        setCustomerCountryCode: (code) =>
+          set({ customerCountryCode: code }, false, 'booking/setCustomerCountryCode'),
+
         setSelectedPaymentMethod: (method) =>
           set({ selectedPaymentMethod: method }, false, 'booking/setSelectedPaymentMethod'),
 
@@ -354,6 +378,10 @@ export const useBookingStore = create<BookingState>()(
               passengerCount: 1,
               luggageCount: 0,
               driverNote: '',
+              flightNumber: '',
+              customerName: '',
+              customerPhone: '',
+              customerCountryCode: '',
               selectedPaymentMethod: null,
               selectedCardId: null, // Reset Stripe card selection
               bookingResult: null,
@@ -388,6 +416,10 @@ export const useBookingStore = create<BookingState>()(
           passengerCount: state.passengerCount,
           luggageCount: state.luggageCount,
           driverNote: state.driverNote,
+          flightNumber: state.flightNumber,
+          customerName: state.customerName,
+          customerPhone: state.customerPhone,
+          customerCountryCode: state.customerCountryCode,
           selectedPaymentMethod: state.selectedPaymentMethod,
           availableVehicles: state.availableVehicles,
           distanceTime: state.distanceTime,

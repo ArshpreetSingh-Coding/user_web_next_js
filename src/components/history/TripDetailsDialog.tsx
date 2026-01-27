@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { RideHistoryItem } from "./HistoryCard";
 import { format } from "date-fns";
 import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
+import { mapsService } from "@/lib/google-maps/GoogleMapsService";
 import { ChevronRight, Clock, CreditCard, ChevronDown, MapPin, User, Navigation, X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "@/lib/i18n/TranslationsProvider";
@@ -13,6 +14,7 @@ import { useGoogleMapsLoaded } from "@/stores/googleMaps.store";
 import { fetchRideSummary } from "@/lib/api/history.api";
 import { mapApiRideToRideHistoryItem } from "@/hooks/useHistory";
 import { ApiRideHistoryItem } from "@/types";
+import { toast } from "sonner";
 
 interface TripDetailsDialogProps {
     open: boolean;
@@ -39,6 +41,11 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const [showPriceBreakdown, setShowPriceBreakdown] = useState(false);
     const [detailedRide, setDetailedRide] = useState<RideHistoryItem | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [routePath, setRoutePath] = useState<{ lat: number; lng: number }[]>([]);
+
+    useEffect(() => {
+        setRoutePath([]); // Reset path when ride changes
+    }, [ride]);
 
     useEffect(() => {
         let active = true;
@@ -64,7 +71,8 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     setDetailedRide(mapped);
                 }
             } catch (error) {
-                console.error("Failed to fetch ride summary:", error);
+                console.log("Failed to fetch ride summary:", error);
+                toast.error("Failed to fetch ride summary");
             } finally {
                 if (active) setIsLoading(false);
             }
@@ -93,13 +101,31 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
         };
     }, [displayRide]);
 
+    useEffect(() => {
+        if (!displayRide || !isLoaded) return;
+
+        const fetchRoute = async () => {
+            try {
+                const result = await mapsService.calculateRoute(
+                    { lat: displayRide.pickupLat, lng: displayRide.pickupLng },
+                    { lat: displayRide.dropLat, lng: displayRide.dropLng }
+                );
+                if (result && result.path) {
+                    setRoutePath(result.path);
+                }
+            } catch (error) {
+                console.log("Failed to fetch route path:", error);
+                toast.error("Failed to fetch route path");
+            }
+        };
+
+        fetchRoute();
+    }, [displayRide, isLoaded]);
+
+    // Only use the actual route path, no fallback to straight line
     const path = useMemo(() => {
-        if (!displayRide) return [];
-        return [
-            { lat: displayRide.pickupLat, lng: displayRide.pickupLng },
-            { lat: displayRide.dropLat, lng: displayRide.dropLng },
-        ];
-    }, [displayRide]);
+        return routePath.length > 0 ? routePath : [];
+    }, [routePath]);
 
     if (!displayRide) return null;
 
@@ -131,14 +157,16 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                         >
                                             <Marker position={{ lat: displayRide.pickupLat, lng: displayRide.pickupLng }} />
                                             <Marker position={{ lat: displayRide.dropLat, lng: displayRide.dropLng }} />
-                                            <Polyline
-                                                path={path}
-                                                options={{ 
-                                                    strokeColor: "var(--primary)", 
-                                                    strokeOpacity: 1, 
-                                                    strokeWeight: 4 
-                                                }}
-                                            />
+                                            {path.length > 0 && (
+                                                <Polyline
+                                                    path={path}
+                                                    options={{
+                                                        strokeColor: "var(--primary)",
+                                                        strokeOpacity: 1,
+                                                        strokeWeight: 4
+                                                    }}
+                                                />
+                                            )}
                                         </GoogleMap>
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-gray-400">Loading Map...</div>
@@ -248,14 +276,16 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     >
                                         <Marker position={{ lat: displayRide.pickupLat, lng: displayRide.pickupLng }} />
                                         <Marker position={{ lat: displayRide.dropLat, lng: displayRide.dropLng }} />
-                                        <Polyline
-                                            path={path}
-                                            options={{
-                                                strokeColor: "var(--primary)", // Primary theme color
-                                                strokeOpacity: 1,
-                                                strokeWeight: 4,
-                                            }}
-                                        />
+                                        {path.length > 0 && (
+                                            <Polyline
+                                                path={path}
+                                                options={{
+                                                    strokeColor: "var(--primary)",
+                                                    strokeOpacity: 1,
+                                                    strokeWeight: 4,
+                                                }}
+                                            />
+                                        )}
                                     </GoogleMap>
                                 ) : (
                                     <div className="flex items-center justify-center h-full text-gray-400">

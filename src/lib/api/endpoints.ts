@@ -49,6 +49,7 @@ export const API_ENDPOINTS = {
     ADD_MONEY: '/wallet/add-money',
     WITHDRAW: '/wallet/withdraw',
     GET_TRANSACTION_HISTORY: '/open/v1/get_transaction_history',
+    SETTLE_NEGATIVE_WALLET_BALANCE: '/open/v1/settle_negative_wallet_balance',
   },
 
   // History

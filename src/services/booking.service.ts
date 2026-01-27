@@ -41,6 +41,12 @@ export const bookingService = {
         longitude: params.longitude,
       }
     );
+
+    if (response.data?.data?.services) {
+      response.data.data.services = response.data.data.services.filter(
+        (s: any) => s.type !== "rental" && s.type !== "car_rental"
+      );
+    }
     return response.data;
   },
 

@@ -61,6 +61,9 @@ export function useHistory(errorMessage: string) {
     const [activeTab, setActiveTab] = useState<TabType>("All");
     const [selectedRide, setSelectedRide] = useState<RideHistoryItem | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0); // Page index (0, 1, 2, ...)
+    const [historySize, setHistorySize] = useState(0); // Total number of history items
+    const ITEMS_PER_PAGE = 10;
 
     // Filter rides based on active tab
     const filteredRides = useMemo(() => {
@@ -69,6 +72,9 @@ export function useHistory(errorMessage: string) {
             return ride.status === activeTab;
         });
     }, [rides, activeTab]);
+
+    // Calculate total pages based on history size
+    const totalPages = Math.ceil(historySize / ITEMS_PER_PAGE);
 
     // Fetch ride history
     useEffect(() => {
@@ -79,8 +85,9 @@ export function useHistory(errorMessage: string) {
 
             try {
                 setIsLoading(true);
+                const startFrom = currentPage * ITEMS_PER_PAGE;
                 const response = await fetchRideHistory({
-                    start_from: "0",
+                    start_from: startFrom,
                     show_custom_fields: 1,
                     login_type: "0",
                     locale: "en"
@@ -89,6 +96,11 @@ export function useHistory(errorMessage: string) {
                 if (response.data && Array.isArray(response.data)) {
                     const mappedRides = response.data.map(mapApiRideToRideHistoryItem);
                     setRides(mappedRides);
+                }
+
+                // Update history size if available
+                if (response.history_size !== undefined) {
+                    setHistorySize(response.history_size);
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
@@ -109,7 +121,7 @@ export function useHistory(errorMessage: string) {
         return () => {
             controller.abort();
         };
-    }, [isAuthenticated, errorMessage]);
+    }, [isAuthenticated, errorMessage, currentPage]);
 
     // Handle card click
     const handleCardClick = (ride: RideHistoryItem) => {
@@ -117,6 +129,12 @@ export function useHistory(errorMessage: string) {
             setSelectedRide(ride);
             setDetailsOpen(true);
         }
+    };
+
+    // Handle page change
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     return {
@@ -129,6 +147,9 @@ export function useHistory(errorMessage: string) {
         setDetailsOpen,
         filteredRides,
         handleCardClick,
-        TABS
+        TABS,
+        currentPage,
+        totalPages,
+        handlePageChange
     };
 }

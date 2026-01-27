@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -138,6 +137,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -192,16 +192,19 @@
 
 @media (max-width: 640px) {
 
-  .h3{
+  .h3 {
     font-size: 14px;
   }
+
   .subtitle {
     font-size: 12px;
   }
+
   .desscription {
     font-size: 12px;
   }
 }
+
 /* Dropdown container */
 .pac-container {
   background-color: white;
@@ -241,7 +244,7 @@
 }
 
 /* Secondary text (city, country) */
-.pac-item-query + span {
+.pac-item-query+span {
   color: #6b7280;
   font-size: 13px;
 }

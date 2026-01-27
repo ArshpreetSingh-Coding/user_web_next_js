@@ -37,6 +37,7 @@ export function RechargeWalletModal({
     stripePublishableKey,
     isLoading,
     refetch,
+    recharge
   } = useWallet();
 
   const wasOpen = React.useRef(false);
@@ -52,8 +53,8 @@ export function RechargeWalletModal({
   }, [isOpen, refetch]);
 
   const handleRecharge = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error('Please enter a valid amount');
+    if (!amount || parseFloat(amount) < 50) {
+      toast.error('Minimum recharge amount is 50');
       return;
     }
 
@@ -66,21 +67,17 @@ export function RechargeWalletModal({
       setIsProcessing(true);
       toast.loading('Processing recharge...', { id: 'wallet-recharge' });
 
-      // TODO: Implement actual wallet recharge API call here
-      // Example:
-      // await rechargeWallet({
-      //   amount: parseFloat(amount),
-      //   cardId: selectedCardId,
-      // });
+      const response = await recharge(parseFloat(amount), selectedCardId);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast.success('Wallet recharged successfully!', { id: 'wallet-recharge' });
-      onRechargeComplete();
-      onClose();
+      if (response && (response.flag === 143 || response.flag === 200)) {
+        toast.success('Wallet recharged successfully!', { id: 'wallet-recharge' });
+        onRechargeComplete();
+        onClose();
+      } else {
+        throw new Error(response?.message || 'Failed to recharge wallet');
+      }
     } catch (error: any) {
-      console.error('❌ Wallet recharge failed:', error);
+      // console.error('❌ Wallet recharge failed:', error);
       toast.error(error.message || 'Failed to recharge wallet', { id: 'wallet-recharge' });
     } finally {
       setIsProcessing(false);

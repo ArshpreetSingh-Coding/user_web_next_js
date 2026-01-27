@@ -57,7 +57,7 @@ apiClient.interceptors.request.use(
     // For user-specific endpoints, enforce user session requirement
     if (isUserEndpoint) {
       if (!userSessionId || !userSessionIdentifier) {
-        console.error('❌ User session required for:', config.url);
+        // console.error('❌ User session required for:', config.url);
         useAuthStore.getState().logout();
         if (typeof window !== 'undefined') {
           window.location.href = '/en/home';

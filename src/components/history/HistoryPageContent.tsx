@@ -3,6 +3,7 @@
 import { HistoryCard } from "./HistoryCard";
 import { useTranslations } from "@/lib/i18n/TranslationsProvider";
 import { TripDetailsDialog } from "./TripDetailsDialog";
+import { Pagination } from "./Pagination";
 import { useAuthStore } from "@/stores/auth.store";
 import { Loader2 } from "lucide-react";
 import { useHistory } from "../../hooks/useHistory";
@@ -11,7 +12,7 @@ import { useSessionGuard } from "@/hooks/useSessionGuard";
 export function HistoryPageContent() {
     // Session guard - validates session if user is authenticated
     const { isAuthenticated } = useAuthStore();
-    useSessionGuard({ 
+    useSessionGuard({
         redirectTo: '/en/home',
         validateInterval: 5 * 60 * 1000, // Validate every 5 minutes
         skipInitialValidation: !isAuthenticated // Only validate if authenticated
@@ -28,7 +29,10 @@ export function HistoryPageContent() {
         setDetailsOpen,
         filteredRides,
         handleCardClick,
-        TABS
+        TABS,
+        currentPage,
+        totalPages,
+        handlePageChange
     } = useHistory(t("Failed to load ride history"));
 
     if (!isAuthenticated) {
@@ -117,6 +121,13 @@ export function HistoryPageContent() {
                             {t("No rides found")}
                         </div>
                     )}
+
+                    {/* Pagination */}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
                 </>
             )}
 

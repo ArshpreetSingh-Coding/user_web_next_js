@@ -55,7 +55,7 @@ export function useFindADrivers() {
 					longitude: pickup.lng,
 				});
 
-				const services = response.data?.services || [];
+				const services = (response.data?.services || []).filter((s: any) => s.type !== "rental" && s.type !== "car_rental");
 				if (services.length) {
 					setServiceData(services);
 

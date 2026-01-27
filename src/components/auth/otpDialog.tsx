@@ -83,12 +83,12 @@ export function OtpDialog({
         // Call API to verify OTP with phone data
         const response = await verifyOtp(otpValue, fullPhoneNumber, countryCode)
         console.log('✅ OTP verified successfully:', response);
-        
+
         // Check if signup onboarding is required
         if (!signupData && response?.data?.signup_onboarding === 1) {
           console.log('📝 Signup onboarding required');
           toast.info(t("auth.completeProfile") || "Please complete your profile");
-          
+
           // Close OTP dialog and open signup dialog with pre-filled phone
           setOtp(["", "", "", ""])
           onOpenChange?.(false)
@@ -103,7 +103,7 @@ export function OtpDialog({
             await updateProfile(signupData.name, signupData.email);
             console.log('✅ Profile updated successfully');
           } catch (profileError: any) {
-            console.error('❌ Profile update failed:', profileError);
+            // console.error('❌ Profile update failed:', profileError);
             // Don't fail the login if profile update fails
             toast.warning(t("auth.profileUpdateFailed") || "Profile update failed, you can update it later");
           }
@@ -155,7 +155,7 @@ export function OtpDialog({
               {otp.map((digit, index) => (
                 <input
                   key={index}
-                  ref={(el) => {inputRefs.current[index] = el}}
+                  ref={(el) => { inputRefs.current[index] = el }}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}

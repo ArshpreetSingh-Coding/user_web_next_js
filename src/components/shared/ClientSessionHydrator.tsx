@@ -16,7 +16,7 @@ export default function ClientSessionHydrator({ session }: { session: any }) {
     if (isAuthenticated) {
       console.log("🔄 Validating user session on startup...")
       fetchProfile().catch((err) => {
-        console.error("❌ Session validation failed:", err)
+        // console.error("❌ Session validation failed:", err)
         // Store handles logout on flag 101
       })
     }

@@ -21,6 +21,8 @@ import { useRouter, useParams } from "next/navigation";
 import type { VehicleRegion } from "@/types";
 import { getCouponsPromos, type Coupon } from "@/lib/api/coupons";
 import { toast } from 'sonner';
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { PhoneInput } from "@/components/auth/phoneInput";
 
 const steps = [
   { label: "Select Car Type" },
@@ -49,6 +51,15 @@ export default function BookingPage() {
     setLuggageCount,
     driverNote,
     setDriverNote,
+    flightNumber,
+    setFlightNumber,
+    selectedService,
+    customerName,
+    setCustomerName,
+    customerPhone,
+    setCustomerPhone,
+    customerCountryCode,
+    setCustomerCountryCode,
   } = useBookingStore();
 
   // Use available vehicles from store - no fallbacks
@@ -57,6 +68,7 @@ export default function BookingPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
   const [isMobileFormActive, setIsMobileFormActive] = useState(true);
+  const [isBookForOtherOpen, setIsBookForOtherOpen] = useState(false);
 
   // Fetch coupons on mount
   useEffect(() => {
@@ -93,7 +105,7 @@ export default function BookingPage() {
     return 0;
   }, [currentStepIndex, selectedRegion, selectedServices, appliedCoupon, luggageCount, driverNote]);
   console.log('SubProgress:', subProgress);
-  
+
   // Target view for the right panel list
   const targetView = useMemo<"regions" | "services">(() => {
     return currentStepIndex === 0 ? "regions" : "services";
@@ -190,7 +202,7 @@ export default function BookingPage() {
       setCurrentStepIndex(currentStepIndex - 1);
     }
   }, [currentStepIndex, setCurrentStepIndex, isMobileFormActive, locale, router]);
-  
+
   const onNext = useCallback(() => {
     if (typeof window !== "undefined" && window.innerWidth < 768 && currentStepIndex === 0 && isMobileFormActive) {
       setIsMobileFormActive(false);
@@ -222,7 +234,7 @@ export default function BookingPage() {
         <div className="w-full grid grid-cols-1 lg:grid-cols-[420px_minmax(0,1fr)] md:grid-cols-[280px_minmax(0,1fr)] gap-6 lg:gap-8 xl:gap-10 items-start">
           <div className={`${isMobileFormActive && currentStepIndex === 0 ? "block" : "hidden"} md:block w-full lg:min-w-105 lg:max-w-110 md:max-w-70 lg:sticky lg:top-6 space-y-4`}>
             <RideBookingForm className="mx-0! min-w-full" variant="outline" />
-            {selectedRegion && <h2 className="H1">Selected Items</h2>}
+            {/* {selectedRegion && <h2 className="H1">Selected Items</h2>}
 
             {selectedRegion && (
               <SelectedItems
@@ -232,7 +244,6 @@ export default function BookingPage() {
                   <TitleBlock
                     title={selectedRegion.region_name}
                     capacity={selectedRegion.max_people}
-                    minutes={selectedRegion.eta || undefined}
                   />
                 }
                 priceComponent={
@@ -248,7 +259,7 @@ export default function BookingPage() {
                   />
                 }
               />
-            )}
+            )} */}
           </div>
 
           <div className={`w-full ${isMobileFormActive && currentStepIndex === 0 ? "hidden md:block" : "block"}`}>
@@ -268,16 +279,16 @@ export default function BookingPage() {
                     ? "Choose a ride"
                     : "Choose a service"}
                 </h2>
-                {currentStepIndex === 0 && (
-                  <IncrementDecrement
-                    title="Passengers"
-                    value={passengerCount}
-                    onIncrement={() => setPassengerCount(passengerCount + 1)}
-                    onDecrement={() =>
-                      setPassengerCount(Math.max(1, passengerCount - 1))
-                    }
-                  />
-                )}
+                {/* {currentStepIndex === 0 && (
+                  // <IncrementDecrement
+                  //   title="Passengers"
+                  //   value={passengerCount}
+                  //   onIncrement={() => setPassengerCount(passengerCount + 1)}
+                  //   onDecrement={() =>
+                  //     setPassengerCount(Math.max(1, passengerCount - 1))
+                  //   }
+                  // />
+                )} */}
               </div>
 
               <div
@@ -299,7 +310,6 @@ export default function BookingPage() {
                           <TitleBlock
                             title={region.region_name}
                             capacity={region.max_people}
-                            minutes={region.eta || undefined}
                           />
                         }
                         subComponent2={
@@ -344,41 +354,33 @@ export default function BookingPage() {
                       </div>
                     ) : (
                       <div
-                        className={`overflow-y-auto max-h-90 space-y-3
-                          [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-1
-                          transition-opacity duration-200 ease-in-out will-change-[opacity] max-sm:max-h-full ${visible ? "opacity-100" : "opacity-0"
+                        className={`flex flex-wrap gap-2 p-1
+                          transition-opacity duration-200 ease-in-out will-change-[opacity] ${visible ? "opacity-100" : "opacity-0"
                           }`}
                       >
                         {vehicleServices.length > 0 ? (
                           vehicleServices.map((svc) => (
-                            <SubRegionCard
+                            <label
                               key={svc.id}
-                              imgSrc="/default.png"
-                              onClick={() => toggleService(svc.id)}
-                              className="max-h-22"
-                              subComponent1={
-                                <TitleBlock title={svc.name} minutes={svc.eta} />
-                              }
-                              subComponent2={
-                                <CheckBox
-                                  checked={selectedServices.includes(svc.id)}
-                                  onCheckedChange={() => toggleService(svc.id)}
-                                />
-                              }
-                              subComponent3={
-                                <DescriptionBlock text={svc.description} />
-                              }
-                              subComponent4={
-                                <PriceBlock price={svc.price} currencySymbol={selectedRegion.region_fare?.currency_symbol || "₹"} />
-                              }
-                            />
+                              className="inline-flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedServices.includes(svc.id)}
+                                onChange={() => toggleService(svc.id)}
+                                className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                              />
+                              <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                                {svc.name}
+                              </span>
+                            </label>
                           ))
                         ) : (
-                          <Card>
-                            <div className="text-center py-2 text-muted-foreground">
-                              <p>No additional services available for this vehicle</p>
-                            </div>
-                          </Card>
+                          // <Card>
+                          <div className="text-center py-2 text-muted-foreground border-none">
+                            <p>No additional services available for this vehicle</p>
+                          </div>
+                          // </Card>
                         )}
                       </div>
                     )}
@@ -389,6 +391,58 @@ export default function BookingPage() {
 
             {currentStepIndex === 1 && (
               <>
+                {/* Book for someone else */}
+                <Card className="mt-6 max-sm:px-0 overflow-hidden">
+                  <div
+                    className="p-6 max-sm:px-2 flex justify-between items-center cursor-pointer"
+                    onClick={() => setIsBookForOtherOpen(!isBookForOtherOpen)}
+                  >
+                    <h2 className="H2 max-sm:text-lg! max-sm:-mb-2 m-0">Book for someone else</h2>
+                    {isBookForOtherOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  </div>
+
+                  {isBookForOtherOpen && (
+                    <div className="px-3 pb-3 max-sm:px-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-700">Passenger Name</label>
+                        <input
+                          type="text"
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          placeholder="Enter passenger name"
+                          className="w-full p-2 border border-border rounded-lg focus:outline-none focus:ring focus:ring-border"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium text-gray-700">Passenger Phone No.</label>
+                        <PhoneInput
+                          phoneNumber={customerPhone}
+                          countryCode={customerCountryCode || 'US'}
+                          onPhoneNumberChange={setCustomerPhone}
+                          onCountryCodeChange={setCustomerCountryCode}
+                          placeholder="Enter phone number"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </Card>
+
+                {selectedService?.type === "airport_taxi" && (
+                  <Card className="px-6 mt-6 max-sm:px-2">
+                    <div className="flex justify-between items-center">
+                      <h2 className="H2 max-sm:text-lg! max-sm:-mb-2">Flight Number</h2>
+                    </div>
+                    <input
+                      type="text"
+                      value={flightNumber}
+                      onChange={(e) => setFlightNumber(e.target.value)}
+                      placeholder="Enter flight number (e.g., AA123)"
+                      className="w-full p-3 border border-border rounded-lg focus:outline-none focus:ring focus:ring-border mt-3"
+                      maxLength={20}
+                    />
+                  </Card>
+                )}
                 <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
                   <h2 className="H2">Coupons & Promotions</h2>
 
@@ -453,7 +507,7 @@ export default function BookingPage() {
             )}
 
 
-            {(currentStepIndex >= 1 && selectedRegion) && (
+            {/* {(currentStepIndex >= 1 && selectedRegion) && (
               <div className="md:hidden">
                 {selectedRegion && <h2 className="H1 my-4 max-sm:text-xl!">Selected Items</h2>}
                 <SelectedItems
@@ -463,7 +517,6 @@ export default function BookingPage() {
                     <TitleBlock
                       title={selectedRegion.region_name}
                       capacity={selectedRegion.max_people}
-                      minutes={selectedRegion.eta || undefined}
                     />
                   }
                   priceComponent={
@@ -480,7 +533,7 @@ export default function BookingPage() {
                   }
                 />
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

@@ -164,7 +164,7 @@ export default function RideSummaryPage() {
 
       router.push(`/${locale}/ride-successful`);
     } catch (err: any) {
-      console.error('❌ Schedule booking failed:', err);
+      // console.error('❌ Schedule booking failed:', err);
       toast.error(err?.message || 'Failed to schedule ride', { id: 'schedule-ride' });
       setBookingResult({
         flag: err?.flag ?? 0,
@@ -189,7 +189,7 @@ export default function RideSummaryPage() {
 
         <div className="grid w-full grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-6 xl:gap-8 max-sm:gap-2">
           <div className="flex flex-col gap-6">
-            <SelectedItems
+            {/* <SelectedItems
               title="Summary"
               className="py-4! px-6!"
               imgSrc={region.images?.tab_normal}
@@ -213,7 +213,7 @@ export default function RideSummaryPage() {
                   }
                 />
               }
-            />
+            /> */}
 
             <Card className="px-4 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1 max-sm:mt-0">
               <h1 className="H2">
@@ -255,7 +255,7 @@ export default function RideSummaryPage() {
                         {paymentDetails.stripeCards.map((card, index) => {
                           // Use id or card_id, whichever exists
                           const cardId = card.card_id || card.id || `card-${index}`;
-                          const isCardSelected = selectedPaymentMethod === 'stripe_card' && selectedCardId === cardId;
+                          const isCardSelected = selectedPaymentMethod === 'stripe_card' && selectedCardId == cardId;
 
                           return (
                             <CardItem
@@ -268,6 +268,15 @@ export default function RideSummaryPage() {
                                 setSelectedCardId(cardId);
                                 setSelectedSquareCardId(null); // Clear Square selection
                                 setSelectedCard(card);
+                              }}
+                              onDelete={() => {
+                                refreshPaymentDetails(); // Refresh the card list
+                                toast.success('Card deleted. Please select a payment method.');
+                                // Clear selection if deleted card was selected
+                                if (isCardSelected) {
+                                  setSelectedPaymentMethod(null);
+                                  setSelectedCardId(null);
+                                }
                               }}
                             />
                           );
@@ -292,9 +301,10 @@ export default function RideSummaryPage() {
                       <div className="space-y-2">
                         {paymentDetails.squareCards.map((card, index) => {
                           // Use id or card_id, whichever exists
-                          const cardId = card.card_id || card.id || `square-card-${index}`;
-                          const isCardSelected = selectedPaymentMethod === 'square_card' && selectedSquareCardId === cardId;
-
+                          const cardId = card.card_id || card.id;
+                          console.log("CARD ID:", cardId, "SELECTED:", selectedSquareCardId, selectedPaymentMethod);
+                          const isCardSelected = selectedPaymentMethod === 'square_card' && selectedSquareCardId == cardId;
+                          console.log("IS SELECTED:", isCardSelected, selectedPaymentMethod === 'square_card', selectedSquareCardId === cardId);
                           return (
                             <SquareCardItem
                               key={cardId}

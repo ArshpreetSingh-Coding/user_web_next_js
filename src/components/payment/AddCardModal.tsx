@@ -28,7 +28,7 @@ export function AddCardModal({
   onCardAdded,
   stripePublishableKey
 }: AddCardModalProps) {
-  const { sessionId, sessionIdentifier } = useAuthStore();
+  const { userSessionId, userSessionIdentifier } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [stripeLoaded, setStripeLoaded] = useState(false);
   const [elementsReady, setElementsReady] = useState(false);
@@ -149,7 +149,7 @@ export function AddCardModal({
 
       setElementsReady(true);
     } catch (err) {
-      console.error("Stripe init failed", err);
+      // console.error("Stripe init failed", err);
       toast.error("Failed to initialize payment form");
       destroyStripeElements();
     }
@@ -173,7 +173,7 @@ export function AddCardModal({
    * Handle card submission with token-based flow (non-3D Secure)
    */
   const handleAddCard = async () => {
-    if (!stripeRef.current || !sessionId || !sessionIdentifier) {
+    if (!stripeRef.current || !userSessionId || !userSessionIdentifier) {
       toast.error('Payment system not ready');
       return;
     }
@@ -215,8 +215,8 @@ export function AddCardModal({
       console.log('💾 Step 2: Saving card to backend...');
       const response = await addCardWithToken(
         tokenData,
-        sessionId,
-        sessionIdentifier
+        userSessionId,
+        userSessionIdentifier
       );
 
       if (response.flag !== 143) {
@@ -230,7 +230,7 @@ export function AddCardModal({
       onCardAdded();
       onClose();
     } catch (error: any) {
-      console.error('❌ Add card failed:', error);
+      // console.error('❌ Add card failed:', error);
       toast.error(error.message || 'Failed to add card', { id: 'add-card' });
     } finally {
       setIsLoading(false);

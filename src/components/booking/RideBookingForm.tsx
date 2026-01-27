@@ -26,7 +26,12 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
   const params = useParams() as { locale?: string };
   const pathname = usePathname() || "";
 
-  const { setSelectedRegion, setSelectedServices, setAvailableVehicles } = useBookingStore();
+  const {
+    setSelectedRegion,
+    setSelectedServices,
+    setAvailableVehicles,
+    selectedService
+  } = useBookingStore();
   const { showToast } = useUIStore();
   const { isFinding, calculateFareAndFindDrivers } = useFindADrivers();
 
@@ -72,7 +77,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
       const locale = params?.locale || "en";
       router.push(`/${locale}/book`);
     } catch (err) {
-      console.error("❌ Error in handleBookNow:", err);
+      // console.error("❌ Error in handleBookNow:", err);
       showToast("Failed to get quotes. Please try again.", "error");
     }
   }, [
@@ -111,7 +116,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
         `Found ${result.vehicles.length} vehicles. Route: ${result.route.distanceText}, ${result.route.durationText}`
       );
     } catch (err) {
-      console.error("❌ Error calculating fare:", err);
+      // console.error("❌ Error calculating fare:", err);
       toast.error("Failed to calculate fare. Please try again.");
     }
   }, [
@@ -124,11 +129,19 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
     stops,
   ]);
 
-  const handleSubmit = pathname.includes("/book") ? handleCalculateFare : handleBookNow;
+  // Auto-calculate fare when service changes and we are on the book page
+  useEffect(() => {
+    if (pathname.includes("/book") && selectedService && pickup?.address && destination?.address) {
+      handleCalculateFare();
+    }
+  }, [selectedService, pickup?.address, destination?.address, handleCalculateFare, pathname]);
 
+  const isBookPage = pathname.includes("/book");
+  const handleSubmit = isBookPage ? handleCalculateFare : handleBookNow;
+  // console.log("selectedService", selectedService?.type)
   return (
     <div
-      className={`w-full max-w-[420px] p-4 lg:p-6 bg-primary rounded-lg lg:rounded-xl flex flex-col lg:max-h-125 ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
+      className={`w-full max-w-[420px] p-4 lg:p-6 bg-primary rounded-lg lg:rounded-xl flex flex-col ${!isBookPage ? "lg:max-h-125" : ""} ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
     >
       <h2
         className={`text-base lg:text-xl font-semibold text-white mb-3 lg:mb-5 shrink-0 ${variant === "outline" ? "text-black!" : ""}`}
@@ -136,7 +149,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
         Where do you want to Go?
       </h2>
 
-      <div className="flex flex-col flex-1 overflow-y-auto lg:pr-3 space-y-1 lg:space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-white/30">
+      <div className={`flex flex-col flex-1 ${!isBookPage ? "overflow-y-auto" : ""} lg:pr-3 space-y-1 lg:space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-white/30`}>
         <PickupLocationField value={pickup} onChange={setPickup} variant={variant} />
 
         {mounted && (
@@ -170,11 +183,11 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
       >
         <Button
           onClick={handleSubmit}
-          disabled={isFinding}
+          disabled={isFinding || !pickup?.address || !destination?.address}
           variant="outline"
           className={`w-full h-10 lg:h-11 bg-white text-primary hover:bg-white hover:scale-102 hover:text-primary font-semibold text-sm lg:text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ${variant === "outline" ? "bg-primary text-white! hover:text-primary!" : ""}`}
         >
-          {isFinding ? "Loading..." : pathname.includes("/book") ? "Calculate Fare" : "Book Now"}
+          {isFinding ? "Loading..." : isBookPage ? "Calculate Fare" : "Book Now"}
           <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </motion.div>

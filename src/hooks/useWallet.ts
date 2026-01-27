@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchWalletBalance, getTransactionHistory } from '@/lib/api/wallet.api';
+import { fetchWalletBalance, getTransactionHistory, rechargeWallet } from '@/lib/api/wallet.api';
 import { useAuthStore } from '@/stores/auth.store';
 import { useGeolocation } from './useGeolocation';
+import { toast } from 'sonner';
 
 export interface StripeCard {
     id: number | string;
@@ -86,7 +87,27 @@ export function useWallet() {
         refetch: useCallback(() => {
             walletQuery.refetch();
             transactionsQuery.refetch();
-        }, []) // TanStack Query refetch functions are stable
+        }, []), // TanStack Query refetch functions are stable
+        recharge: async (amount: number, cardId: string | number) => {
+            const user = useAuthStore.getState().user;
+            if (!user?.phone_no) {
+                toast.error("User phone number not found");
+                return;
+            }
+            if (amount < 50) {
+                toast.error("Minimum recharge amount is 50");
+                return;
+            }
+
+            return rechargeWallet({
+                driver_phone_no: user.phone_no.replace(/^\+/, ''),
+                amount,
+                login_type: 1,
+                payment_mode: 9,
+                currency: walletQuery.data?.data?.currency || 'INR',
+                card_id: cardId
+            });
+        }
     };
 }
 
