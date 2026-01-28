@@ -49,7 +49,10 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
         distance: (apiRide.estimated_distance || apiRide.distance) ? `${apiRide.estimated_distance || apiRide.distance} ${apiRide.distance_unit || "km"}` : "0 km",
         duration: apiRide.ride_time ? `${apiRide.ride_time} min` : "0 min",
         paymentMethod: apiRide.preferred_payment_mode === 1 ? "Cash" : "Cash",
-        historyIcon: apiRide.history_icon
+        product_type: apiRide.product_type,
+        ride_type: apiRide.ride_type,
+        historyIcon: apiRide.history_icon,
+        pickupId: apiRide.pickup_id || apiRide.schedule_pickup_id // For scheduled ride cancellation
     };
 };
 

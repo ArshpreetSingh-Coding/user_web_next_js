@@ -8,6 +8,12 @@ import { useAuthStore } from "@/stores/auth.store";
 import { Loader2 } from "lucide-react";
 import { useHistory } from "../../hooks/useHistory";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
+import { cancelScheduledRide } from "@/lib/api/history.api";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { toast } from "sonner";
+import { useState } from "react";
 
 export function HistoryPageContent() {
     // Session guard - validates session if user is authenticated
@@ -34,6 +40,86 @@ export function HistoryPageContent() {
         totalPages,
         handlePageChange
     } = useHistory(t("Failed to load ride history"));
+
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+    const [rideToCancel, setRideToCancel] = useState<any>(null);
+
+    // Handle cancel scheduled ride
+    // const handleCancelScheduledRide = async (ride: any) => {
+    //     if (!ride.pickupId) {
+    //         toast.error(t("Cannot cancel: Missing pickup ID"));
+    //         return;
+    //     }
+
+    //     // Show confirmation dialog
+    //     const confirmed = window.confirm(
+    //         t("Are you sure you want to cancel this scheduled ride?")
+    //     );
+
+    //     if (!confirmed) return;
+
+    //     try {
+    //         setIsCancelling(true);
+    //         const response = await cancelScheduledRide({
+    //             pickup_id: ride.pickupId,
+    //             is_driver: 0 // Always 0 for customer
+    //         });
+
+    //         if (response.flag === 0 || response.flag === 200 || response.flag === 143) {
+    //             toast.success(t("Scheduled ride cancelled successfully"));
+    //             // Refresh the ride history
+    //             window.location.reload();
+    //         } else {
+    //             toast.error(response.message || t("Failed to cancel scheduled ride"));
+    //         }
+    //     } catch (error) {
+    //         console.error("Failed to cancel scheduled ride:", error);
+    //         toast.error(t("Failed to cancel scheduled ride"));
+    //     } finally {
+    //         setIsCancelling(false);
+    //     }
+    // };
+ const handleCancelScheduledRide = async (ride: any) => {
+    if (!ride.pickupId) {
+        toast.error(t("Cannot cancel: Missing pickup ID"));
+        return;
+    }
+
+    // Show confirmation dialog
+    setRideToCancel(ride);
+    setCancelDialogOpen(true);
+};
+
+const confirmCancelRide = async () => {
+    if (!rideToCancel) return;
+
+    try {
+        setIsCancelling(true);
+        setCancelDialogOpen(false);
+        const response = await cancelScheduledRide({
+            pickup_id: rideToCancel.pickupId,
+            is_driver: 0 // Always 0 for customer
+        });
+
+        if (response.flag === 0 || response.flag === 200 || response.flag === 143) {
+            toast.success(t("Scheduled ride cancelled successfully"));
+            // Refresh the ride history
+            window.location.reload();
+        } else {
+            toast.error(response.message || t("Failed to cancel scheduled ride"));
+        }
+    } catch (error) {
+        console.error("Failed to cancel scheduled ride:", error);
+        toast.error(t("Failed to cancel scheduled ride"));
+    } finally {
+        setIsCancelling(false);
+        setRideToCancel(null);
+    }
+};
+
+
+
 
     if (!isAuthenticated) {
         return (
@@ -112,6 +198,7 @@ export function HistoryPageContent() {
                                 key={ride.id}
                                 ride={ride}
                                 onClick={handleCardClick}
+                                onCancel={handleCancelScheduledRide}
                             />
                         ))}
                     </div>
@@ -131,11 +218,67 @@ export function HistoryPageContent() {
                 </>
             )}
 
+            {/* Trip Details Dialog for Completed Rides */}
             <TripDetailsDialog
                 open={detailsOpen}
                 onOpenChange={setDetailsOpen}
                 ride={selectedRide}
             />
+
+            {/* Loading overlay for cancelling */}
+            {isCancelling && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-4">
+                        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                        <p className="text-gray-700 font-medium">{t("Cancelling scheduled ride...")}</p>
+                    </div>
+                </div>
+            )}
+            {/* Cancel Confirmation Dialog */}
+            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle>{t("Cancel Scheduled Ride")}</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="py-4 space-y-4">
+                        <p className="text-gray-600">
+                            {t("Are you sure you want to cancel this scheduled ride?")}
+                        </p>
+
+                        {rideToCancel && (
+                            <div className="p-4 bg-gray-50 rounded-lg space-y-2">
+                                <p className="text-sm font-medium text-gray-700">
+                                    {rideToCancel.location}
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                    {format(new Date(rideToCancel.date), "MMM dd, h:mm a")}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex gap-3 justify-end">
+                        <Button
+                            variant="outline"
+                            onClick={() => setCancelDialogOpen(false)}
+                            disabled={isCancelling}
+                        >
+                            {t("No, Keep It")}
+                        </Button>
+
+                        <Button
+                            variant="destructive"
+                            onClick={confirmCancelRide}
+                            disabled={isCancelling}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {isCancelling ? t("Cancelling...") : t("Yes, Cancel Ride")}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 }

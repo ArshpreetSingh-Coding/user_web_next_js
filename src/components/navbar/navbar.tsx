@@ -12,6 +12,7 @@ import { LoginDialog, SignupDialog, OtpDialog } from '@/components/auth/auth';
 import { ProfileDialog } from '@/components/profile/profile';
 import { WalletDialog } from '@/components/wallet/WalletDialog';
 import { useAuthStore } from '@/stores/auth.store';
+import { useUIStore } from '@/stores/ui.store';
 import type { SignupData } from '@/types';
 import { toast } from "sonner";
 
@@ -20,9 +21,19 @@ export default function Navbar() {
   const router = useRouter();
   const params = useParams() as { locale?: string };
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
-  const [signupOpen, setSignupOpen] = useState(false);
+  const {
+    isAuthModalOpen,
+    authModalTab,
+    openAuthModal,
+    closeAuthModal,
+    setAuthModalTab
+  } = useUIStore();
+  const loginOpen = isAuthModalOpen && authModalTab === 'login';
+  const signupOpen = isAuthModalOpen && authModalTab === 'signup';
+
+  const setLoginOpen = (open: boolean) => open ? openAuthModal('login') : closeAuthModal();
+  const setSignupOpen = (open: boolean) => open ? openAuthModal('signup') : closeAuthModal();
   const [signupData, setSignupData] = useState<SignupData | null>(null);
   const [isOnboarding, setIsOnboarding] = useState(false); // Add this
   const [otpOpen, setOtpOpen] = useState(false);
@@ -41,7 +52,7 @@ export default function Navbar() {
     setMounted(true);
 
     const handleOpenLogin = () => {
-      setLoginOpen(true);
+      openAuthModal('login');
     };
 
     window.addEventListener('open-login', handleOpenLogin);

@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { RideHistoryItem } from "./HistoryCard";
+import { RateRideDialog } from "./RateRideDialog";
 import { format } from "date-fns";
 import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
 import { mapsService } from "@/lib/google-maps/GoogleMapsService";
@@ -42,6 +43,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const [detailedRide, setDetailedRide] = useState<RideHistoryItem | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [routePath, setRoutePath] = useState<{ lat: number; lng: number }[]>([]);
+    const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
 
     useEffect(() => {
         setRoutePath([]); // Reset path when ride changes
@@ -61,13 +63,16 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
                 const response = await fetchRideSummary({
                     engagement_id: ride.engagementId || ride.id,
+                    product_type: ride.product_type,
+                    ride_type: ride.ride_type,
                     locale: "en"
                 });
 
                 if (active && response.data) {
                     // Assuming response.data is the single ApiRideHistoryItem object
                     // We cast it because the API response type is generic 'any' currently
-                    const mapped = mapApiRideToRideHistoryItem(response.data as ApiRideHistoryItem);
+                    const mapped = mapApiRideToRideHistoryItem(response as ApiRideHistoryItem);
+                    console.log("ride history mapped", mapped);
                     setDetailedRide(mapped);
                 }
             } catch (error) {
@@ -127,11 +132,16 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
         return routePath.length > 0 ? routePath : [];
     }, [routePath]);
 
+    const handleRatingSubmitted = () => {
+        // Refresh the page or refetch data after rating is submitted
+        window.location.reload();
+    };
+
     if (!displayRide) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-none max-sm:rounded-none sm:max-w-3xl sm:bg-[#F9FAFB] w-full">
+            <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-none max-sm:rounded-none sm:max-w-4xl sm:bg-[#F9FAFB] w-[70%]">
 
                 {/* --- MOBILE VIEW (Premium Design) --- */}
                 <div className="flex sm:hidden flex-col h-full bg-white overflow-y-auto">
@@ -181,7 +191,10 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                             </div>
 
                             {/* Rate Your Trip Card */}
-                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors">
+                            <div 
+                                onClick={() => setRatingDialogOpen(true)}
+                                className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
+                            >
                                 <div className="space-y-0.5">
                                     <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
                                     <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
@@ -262,9 +275,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         </button> */}
                     </div>
 
-                    <div className="flex flex-col md:flex-row h-[70vh] overflow-y-auto">
+                    <div className="flex flex-col md:flex-row h-[80vh] overflow-y-auto">
                         {/* Left Column: Map & Driver Info */}
-                        <div className="w-full md:w-5/12 p-4 flex flex-col gap-4 bg-white md:border-r">
+                        <div className="w-full md:w-3/5 p-4 flex flex-col gap-4 bg-white md:border-r">
                             {/* Map Area */}
                             <div className="relative w-full aspect-square md:aspect-4/5 bg-gray-100 rounded-xl overflow-hidden shadow-inner">
                                 {isLoaded ? (
@@ -305,10 +318,13 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         </div>
 
                         {/* Right Column: Actions & Details */}
-                        <div className="w-full md:w-7/12 p-4 flex flex-col gap-4 bg-[#F9FAFB]">
+                        <div className="w-full md:w-2/5 p-4 flex flex-col gap-4 bg-[#F9FAFB]">
 
                             {/* Rate Your Trip Card */}
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
+                            <div 
+                                onClick={() => setRatingDialogOpen(true)}
+                                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                            >
                                 <div>
                                     <h3 className="font-bold text-gray-900">{t("Rate Your Trip")}</h3>
                                     <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
@@ -365,7 +381,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <div className="p-1.5 bg-primary/10 rounded text-primary">
                                             {/* Cash Icon/Wallet Icon */}
-                                            <span className="text-xs font-bold">₹</span>
+                                            <span className="text-xs font-bold p-1.5">₹</span>
                                         </div>
                                         {displayRide.paymentMethod}
                                     </div>
@@ -415,6 +431,14 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     </div>
                 </div>
             </DialogContent>
+
+            {/* Rate Ride Dialog */}
+            <RateRideDialog
+                open={ratingDialogOpen}
+                onOpenChange={setRatingDialogOpen}
+                ride={displayRide}
+                onRatingSubmitted={handleRatingSubmitted}
+            />
         </Dialog>
     );
 }

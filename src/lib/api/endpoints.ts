@@ -57,6 +57,8 @@ export const API_ENDPOINTS = {
     RIDES: '/open/v1/fetch_integrated_order_history',
     RIDE_DETAILS: (id: number | string) => `/open/v1/get_ride_details`,
     GET_RIDE_SUMMARY: '/open/v1/get_ride_summary',
+    REMOVE_PICKUP_SCHEDULE: '/open/v1/remove_pickup_schedule',
+    RATE_DRIVER: '/open/v1/rate_the_driver',
   },
 
   // Payment

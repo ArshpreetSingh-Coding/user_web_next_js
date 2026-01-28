@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
 
 export type RideStatus = "Completed" | "Cancelled" | "Scheduled";
 
@@ -22,15 +23,19 @@ export interface RideHistoryItem {
     distance: string;
     duration: string;
     paymentMethod: string;
+    product_type?: number;
+    ride_type?: number;
     historyIcon?: string;
+    pickupId?: number | string; // For scheduled rides cancellation
 }
 
 interface HistoryCardProps {
     ride: RideHistoryItem;
     onClick?: (ride: RideHistoryItem) => void;
+    onCancel?: (ride: RideHistoryItem) => void;
 }
 
-export function HistoryCard({ ride, onClick }: HistoryCardProps) {
+export function HistoryCard({ ride, onClick, onCancel }: HistoryCardProps) {
     const getStatusColor = (status: RideStatus) => {
         switch (status) {
             case "Completed":
@@ -45,6 +50,12 @@ export function HistoryCard({ ride, onClick }: HistoryCardProps) {
     };
 
     const isCompleted = ride.status === "Completed";
+    const isScheduled = ride.status === "Scheduled";
+
+    const handleCancelClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent card click event
+        onCancel?.(ride);
+    };
 
     return (
         <div
@@ -83,9 +94,20 @@ export function HistoryCard({ ride, onClick }: HistoryCardProps) {
                         {format(new Date(ride.date), "MMM dd (h:mm a)")}
                     </p>
 
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getStatusColor(ride.status)}`}>
-                        {ride.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        {isScheduled && onCancel && (
+                            <button
+                                onClick={handleCancelClick}
+                                className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 transition-colors group"
+                                title="Cancel scheduled ride"
+                            >
+                                <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-red-600 group-hover:text-red-700" />
+                            </button>
+                        )}
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getStatusColor(ride.status)}`}>
+                            {ride.status}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

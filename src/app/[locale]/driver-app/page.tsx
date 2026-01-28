@@ -28,7 +28,7 @@ export default function DriverAppPage() {
     return (
         <div className="relative min-h-[calc(100vh-88px)] overflow-hidden flex flex-col">
             {/* Content Section */}
-            <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 relative z-10 flex-1 flex flex-col justify-center">
+            <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-20 relative z-10 flex-1 flex flex-col justify-center -translate-y-6">
                 <div className="flex flex-col lg:flex-row w-full justify-between items-center gap-10 lg:gap-16">
 
                     {/* Left Section - Text Content */}
@@ -38,7 +38,7 @@ export default function DriverAppPage() {
                         animate={mounted ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
                                 {t("Driver App") || "Driver App"}
                             </h1>
@@ -47,7 +47,7 @@ export default function DriverAppPage() {
                             </p>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-1">
                             {features.map((feature, index) => (
                                 <motion.div
                                     key={index}

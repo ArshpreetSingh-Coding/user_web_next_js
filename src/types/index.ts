@@ -517,6 +517,7 @@ export interface VehicleRegion {
   schedule_ride_disable?: number;
   instant_ride_disable?: number;
   [key: string]: any;
+  data: any
 }
 
 export interface FindDriverRequest {
@@ -657,6 +658,8 @@ export interface HistoryResponse {
 
 export interface RideSummaryRequest {
   engagement_id: number | string;
+  product_type?: number | string;
+  ride_type?: number | string;
   locale: string;
 }
 
@@ -664,4 +667,28 @@ export interface RideSummaryResponse {
   flag: number;
   message?: string;
   data: any; // Detailed ride summary
+}
+
+export interface CancelScheduledRideRequest {
+  pickup_id: number | string;
+  is_driver: 0 | 1; // 0 for customer, 1 for driver
+}
+
+export interface CancelScheduledRideResponse {
+  flag: number;
+  message?: string;
+  data?: any;
+}
+
+export interface RateDriverRequest {
+  given_rating: number; // 1-5
+  engagement_id: number | string;
+  feedback: string;
+  is_fixed_route: 0 | 1;
+}
+
+export interface RateDriverResponse {
+  flag: number;
+  message?: string;
+  data?: any;
 }

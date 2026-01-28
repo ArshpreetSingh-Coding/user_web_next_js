@@ -313,7 +313,7 @@ export default function RideSummaryPage() {
                               onClick={() => {
                                 console.log('Selecting Square card:', cardId);
                                 setSelectedPaymentMethod('square_card');
-                                setSelectedSquareCardId(cardId);
+                                setSelectedSquareCardId(cardId ?? null);
                                 setSelectedCardId(null); // Clear Stripe selection
                                 setSelectedSquareCard(card);
                               }}
