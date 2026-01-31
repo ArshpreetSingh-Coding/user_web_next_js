@@ -517,8 +517,8 @@ export interface VehicleRegion {
   schedule_ride_disable?: number;
   instant_ride_disable?: number;
   [key: string]: any;
-  data: any
 }
+export type FindDriversResponse = any;
 
 export interface FindDriverRequest {
   latitude: number;
@@ -535,13 +535,7 @@ export interface FindDriverRequest {
   pickup_time?: string;
 }
 
-export interface FindDriverResponse {
-  flag: number;
-  regions: VehicleRegion[];
-  offset?: number;
-  error?: string;
-  message?: string;
-}
+
 
 export interface FindDriverOptions {
   serviceId?: number;
@@ -647,6 +641,9 @@ export interface HistoryRequest {
   login_type: number | string;
   locale: string;
   offering_array?: number[];
+  selected_service?: number;
+  ride_status_filter?: number;
+  past_ride_status_filter?: number;
 }
 
 export interface HistoryResponse {
@@ -692,3 +689,173 @@ export interface RateDriverResponse {
   message?: string;
   data?: any;
 }
+// export interface FindDriverResponse {
+//   flag: number;
+//   engagement_id: number;
+//   user_id: number;
+//   driver_id: number;
+//   pickup_address: string;
+//   drop_address: string;
+//   pickup_time: string;
+//   drop_time: string;
+//   pickup_latitude: number;
+//   pickup_longitude: number;
+//   drop_latitude: number;
+//   drop_longitude: number;
+
+//   ride_date: string;
+//   engagement_date: string;
+//   ride_end_time: string;
+//   ride_end_time_utc: string;
+//   drop_time_utc: string;
+//   end_ride_api_hit_time: string;
+//   created_at: string;
+
+//   ride_type: number;
+//   vehicle_type: number;
+//   vehicle_id: number;
+//   region_name: string;
+//   city: number;
+//   sub_region_id: number;
+
+//   status: number;
+//   accept_time: string;
+//   ride_time: number;
+//   distance: number;
+//   distance_unit: string;
+//   wait_time: number;
+
+//   fare: number;
+//   base_fare: number;
+//   fare_factor: number;
+//   fare_discount: number;
+//   discount_value: number;
+//   to_pay: number;
+//   trip_total: number;
+
+//   convenience_charge: number;
+//   toll_charge: number;
+//   bank_charges: number;
+//   tip_amount: number;
+//   pf_tip_amount: number;
+
+//   luggage_count: number;
+//   luggage_charges: number;
+//   total_luggage_charges: number;
+//   customer_fare_per_baggage: number;
+
+//   currency: string;
+//   currency_symbol: string;
+
+//   paid_using_wallet: number;
+//   paid_using_paytm: number;
+//   paid_using_mobikwik: number;
+//   paid_using_stripe: number;
+//   paid_using_freecharge: number;
+//   paid_using_razorpay: number;
+//   regions: RegionInfo[];
+//   region: RegionPolygon[][];
+//   payment_mode_razorpay: number;
+//   preferred_payment_mode: number;
+
+//   jugnoo_balance: number;
+//   last_4: string;
+
+//   is_pooled: number;
+//   pool_fare_id: number | null;
+//   pool_ride_time: number | null;
+
+//   is_invoiced: number;
+//   is_corporate_ride: number;
+//   isDonate: number;
+
+//   driver_name: string;
+//   driver_car_no: string;
+//   driver_image: string;
+//   driver_rating: number;
+//   driver_upi: string;
+//   phone_no: string;
+
+//   partner_name: string;
+//   partner_type: string | null;
+
+//   customer_cancellation_charges: number;
+//   cancellation_charges: number;
+//   waiting_charges_applicable: number;
+//   meter_fare_applicable: number;
+//   debt_added: number;
+
+//   metadata: string;
+
+//   pickup_location_address_ln: string;
+//   drop_location_address_ln: string;
+
+//   co2_saved: string;
+//   co2_saved_in_gms: number;
+//   calories_burnt: number;
+
+//   total_rides_as_user: number;
+//   skip_rating_by_customer: number;
+//   rate_app: number;
+//   ride_end_good_feedback_view_type: string;
+// }
+// export interface RegionPolygon {
+//   x: number; // latitude
+//   y: number; // longitude
+// }
+// export interface RegionInfo {
+//   region_id: number;
+//   region_name: string;
+//   description: string;
+
+//   vehicle_type: number;
+//   service_id: number;
+//   ride_type: number;
+
+//   eta: number;
+//   distance: number;
+
+//   applicable_gender: number;
+//   max_people: number;
+//   luggage_capacity: number;
+
+//   customer_fare_factor: number;
+//   driver_fare_factor: number;
+
+//   fare_mandatory: number;
+//   destination_mandatory: number;
+//   show_fare_estimate: number;
+
+//   instant_ride_disable: number;
+//   schedule_ride_disable: number;
+//   reverse_bidding_enabled: number;
+
+//   prepaid_payment_enabled: number;
+//   pickup_confirmation_enabled: number;
+//   multiple_destinations_enabled: number;
+//   customer_notes_enabled: number;
+
+//   restricted_payment_modes: number[];
+//   restricted_corporates: number[];
+
+//   icon_set: string;
+
+
+//   offer_texts: {
+//     text1: string;
+//     text2: string;
+//   };
+
+//   region_fare: RegionFare;
+
+//   vehicle_properties: string; // JSON string from backend
+//   vehicle_services: VehicleService[];
+
+//   stations: unknown[];
+//   instructions: unknown[];
+//   packages: unknown[];
+
+
+//   operator_id: number;
+//   deepindex: string;
+// }

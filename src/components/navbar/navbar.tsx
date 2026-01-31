@@ -158,7 +158,7 @@ export default function Navbar() {
     <>
       <nav>
         <header className="border-b bg-white shadow-l">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6 flex items-center justify-between">
             <div className="text-2xl font-bold h-10 w-48 relative">
               <Link href="/home">
                 <Image

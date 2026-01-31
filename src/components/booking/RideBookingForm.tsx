@@ -34,6 +34,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
   const {
     setSelectedRegion,
     setSelectedServices,
+    selectedServices,
     setAvailableVehicles,
     selectedService,
     selectedRegion,
@@ -76,22 +77,22 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
     setSelectedRegion(null);
     setSelectedServices([]);
     setAvailableVehicles([]);
-
+    console.log("validation data:::::::::::",pickup, destination, stops, scheduledDateTime);
     const validation = bookingValidator.validateBookingForm({
       pickup,
       destination,
       stops,
       scheduledDateTime,
     });
-
+    console.log("validation:::::", validation);
     if (!validation.isValid) {
       toast.error(validation.error);
       return;
     }
-
+    console.log("redirecting to the book page");
     try {
-      const result = await calculateFareAndFindDrivers();
-      console.log("🚙 Vehicles ready:", result.vehicles.length);
+      const data = await calculateFareAndFindDrivers();
+      // console.log("🚙 Vehicles ready:", data?.regions.vehicles.length);
 
       const locale = params?.locale || "en";
       router.push(`/${locale}/book`);
@@ -132,6 +133,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
 
     try {
       const result = await calculateFareAndFindDrivers();
+      console.log("+++++++++", result);
       toast.success(
         `Found ${result.vehicles.length} vehicles. Route: ${result.route.distanceText}, ${result.route.durationText}`
       );
@@ -158,6 +160,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
   }, [selectedService, pickup?.address, destination?.address, handleCalculateFare, pathname]);
 
   const isBookPage = pathname.includes("/book");
+  console.log("is book page::", isBookPage);
   const handleSubmit = isBookPage ? handleCalculateFare : handleBookNow;
   const showAdditionalOptions = showOtherOptions;
   
@@ -218,88 +221,6 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
         {/* Additional Options - shown when Other Options is toggled */}
         {showAdditionalOptions && (
           <div className="space-y-3 pt-2">
-            {/* Book for someone else */}
-            <Card className={`overflow-hidden ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
-              <div
-                className={`p-4 flex justify-between items-center cursor-pointer ${variant === "outline" ? "hover:bg-gray-50" : "hover:bg-white/5"}`}
-                onClick={() => setIsBookForOtherOpen(!isBookForOtherOpen)}
-              >
-                <h3 className={`text-sm font-semibold ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
-                  Book for someone else
-                </h3>
-                {isBookForOtherOpen ? (
-                  <ChevronUp className={`h-4 w-4 ${variant === "outline" ? "text-gray-600" : "text-white"}`} />
-                ) : (
-                  <ChevronDown className={`h-4 w-4 ${variant === "outline" ? "text-gray-600" : "text-white"}`} />
-                )}
-              </div>
-
-              <AnimatePresence>
-                {isBookForOtherOpen && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="px-4 pb-4 space-y-3">
-                      <div className="space-y-1">
-                        <label className={`text-xs font-medium ${variant === "outline" ? "text-gray-700" : "text-white/90"}`}>
-                          Passenger Name
-                        </label>
-                        <input
-                          type="text"
-                          value={customerName}
-                          onChange={(e) => setCustomerName(e.target.value)}
-                          placeholder="Enter passenger name"
-                          className={`w-full p-2 border rounded-lg focus:outline-none focus:ring ${
-                            variant === "outline" 
-                              ? "border-gray-300 bg-white text-gray-900 focus:ring-primary/20" 
-                              : "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:ring-white/20"
-                          }`}
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className={`text-xs font-medium ${variant === "outline" ? "text-gray-700" : "text-white/90"}`}>
-                          Passenger Phone
-                        </label>
-                        <PhoneInput
-                          phoneNumber={customerPhone}
-                          countryCode={customerCountryCode || 'US'}
-                          onPhoneNumberChange={setCustomerPhone}
-                          onCountryCodeChange={setCustomerCountryCode}
-                          placeholder="Enter phone number"
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card>
-
-            {/* Flight Number - only for airport taxi */}
-            {selectedService?.type === "airport_taxi" && (
-              <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
-                <label className={`text-sm font-semibold mb-2 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
-                  Flight Number
-                </label>
-                <input
-                  type="text"
-                  value={flightNumber}
-                  onChange={(e) => setFlightNumber(e.target.value)}
-                  placeholder="e.g., AA123"
-                  maxLength={20}
-                  className={`w-full p-2 border rounded-lg focus:outline-none focus:ring ${
-                    variant === "outline" 
-                      ? "border-gray-300 bg-white text-gray-900 focus:ring-primary/20" 
-                      : "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:ring-white/20"
-                  }`}
-                />
-              </Card>
-            )}
-
             {/* Luggage */}
             <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
               <div className="flex justify-between items-center">
@@ -332,6 +253,52 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
                 }`}
               />
             </Card>
+
+            {/* Additional Services */}
+            {isBookPage && selectedRegion && (
+              <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+                <label className={`text-sm font-semibold mb-2 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
+                  Additional Services
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedRegion.vehicle_services && selectedRegion.vehicle_services.length > 0 ? (
+                    selectedRegion.vehicle_services.map((svc: any) => (
+                      <label
+                        key={svc.id}
+                        className={`inline-flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                          variant === "outline"
+                            ? "border-gray-200 hover:bg-gray-50"
+                            : "border-white/30 hover:bg-white/5"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedServices.includes(svc.id)}
+                          onChange={() => {
+                            const updatedServices = selectedServices.includes(svc.id)
+                              ? selectedServices.filter((id) => id !== svc.id)
+                              : [...selectedServices, svc.id];
+                            setSelectedServices(updatedServices);
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                        />
+                        <span className={`text-sm font-medium whitespace-nowrap ${
+                          variant === "outline" ? "text-gray-900" : "text-white"
+                        }`}>
+                          {svc.name}
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <p className={`text-sm ${
+                      variant === "outline" ? "text-gray-500" : "text-white/60"
+                    }`}>
+                      No additional services available
+                    </p>
+                  )}
+                </div>
+              </Card>
+            )}
           </div>
         )}
       </div>

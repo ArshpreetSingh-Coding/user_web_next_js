@@ -20,6 +20,7 @@ import { useRouter, useParams } from "next/navigation";
 import { getCouponsPromos, type Coupon } from "@/lib/api/coupons";
 import { toast } from 'sonner';
 import { Skeleton } from "@/components/ui/skeleton";
+import { PhoneInput } from "@/components/auth/phoneInput";
 
 const VehicleCardSkeleton = () => (
   <div className="flex items-center gap-4 rounded-lg bg-white p-3 ring-1 ring-border shadow-sm h-25">
@@ -57,6 +58,15 @@ export default function BookingPage() {
     selectedServices,
     setSelectedServices,
     isLoading,
+    selectedService,
+    flightNumber,
+    setFlightNumber,
+    customerName,
+    setCustomerName,
+    customerPhone,
+    setCustomerPhone,
+    customerCountryCode,
+    setCustomerCountryCode,
   } = useBookingStore();
   const { isAuthenticated } = useAuthStore();
   const { openAuthModal } = useUIStore();
@@ -69,28 +79,28 @@ export default function BookingPage() {
   const [isMobileFormActive, setIsMobileFormActive] = useState(true);
 
   // Fetch coupons on mount
-  useEffect(() => {
-    const fetchCoupons = async () => {
-      setIsLoadingCoupons(true);
-      try {
-        const fetchedCoupons = await getCouponsPromos();
-        setCoupons(fetchedCoupons);
-      } catch (error) {
-        console.log('Error fetching coupons:', error);
-        setCoupons([]);
-      } finally {
-        setIsLoadingCoupons(false);
-      }
-    };
-    fetchCoupons();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCoupons = async () => {
+  //     setIsLoadingCoupons(true);
+  //     try {
+  //       const fetchedCoupons = await getCouponsPromos();
+  //       setCoupons(fetchedCoupons);
+  //     } catch (error) {
+  //       console.log('Error fetching coupons:', error);
+  //       setCoupons([]);
+  //     } finally {
+  //       setIsLoadingCoupons(false);
+  //     }
+  //   };
+  //   fetchCoupons();
+  // }, []);
 
   // Auto-advance from step 0 to step 1 when vehicles are available
   useEffect(() => {
-    if (currentStepIndex === 0 && availableVehicles.length > 0 && isAuthenticated) {
+    if (currentStepIndex === 0 && availableVehicles.length > 0) {
       setCurrentStepIndex(1);
     }
-  }, [availableVehicles, currentStepIndex, setCurrentStepIndex, isAuthenticated]);
+  }, [availableVehicles, currentStepIndex, setCurrentStepIndex]);
 
   const subProgress = useMemo(() => {
     if (currentStepIndex === 1) {
@@ -170,17 +180,17 @@ export default function BookingPage() {
 
   const handleStepChange = useCallback((nextStep: number) => {
     // Prevent unauthenticated users from proceeding past step 0
-    if (nextStep > 0 && !isAuthenticated) {
-      openAuthModal();
-      return;
-    }
+    // if (nextStep > 1 && !isAuthenticated) {
+    //   openAuthModal();
+    //   return;
+    // }
 
-    if (nextStep >= 2 && !selectedRegion) {
+    if (nextStep >= 1 && !selectedRegion) {
       toast.error('Please select a vehicle first');
       return;
     }
 
-    if (nextStep === 2) {
+    if (nextStep === 1) {
       router.push(`/${locale}/ride-summary`);
       return;
     }
@@ -194,12 +204,12 @@ export default function BookingPage() {
       return;
     }
 
-    if (currentStepIndex === 0) {
+    if (currentStepIndex === 1 || currentStepIndex === 0) {
       router.push(`/${locale}/home`);
       return;
     }
 
-    if (currentStepIndex > 0) {
+    if (currentStepIndex > 1) {
       setCurrentStepIndex(currentStepIndex - 1);
     }
   }, [currentStepIndex, setCurrentStepIndex, isMobileFormActive, locale, router]);
@@ -216,9 +226,20 @@ export default function BookingPage() {
         toast.error('Please select a vehicle to proceed');
         return;
       }
+      
+      // Validate flight number for airport rides
+      if (selectedService?.type === "airport_taxi" && !flightNumber.trim()) {
+        toast.error('Flight number is required for airport rides');
+        return;
+      }
+      
+      if (!isAuthenticated) {
+        openAuthModal();
+        return;
+      }
       router.push(`/${locale}/ride-summary`);
     }
-  }, [currentStepIndex, selectedRegion, locale, router, isMobileFormActive]);
+  }, [currentStepIndex, selectedRegion, locale, router, isMobileFormActive, isAuthenticated, selectedService, flightNumber]);
 
   return (
     <section className="relative min-h-[calc(100vh-88px)] pb-20 w-full bg-[#f8f8f8]">
@@ -368,8 +389,57 @@ export default function BookingPage() {
               </div>
             </Card>
 
-            {/* Vehicle Services Section - shown on step 1 after vehicle selection */}
+            {/* Booking Details - shown on step 1 after vehicle selection */}
             {currentStepIndex === 1 && selectedRegion && (
+              <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
+                <h2 className="H2 mb-3">Booking Details</h2>
+                <div className="space-y-4">
+                  {/* Book for someone else */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
+                    <div className="space-y-2 sm:flex sm:gap-12.5">
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Passenger name"
+                        className="w-[40%] p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      <div className="w-[55%]">
+                        <PhoneInput
+                          phoneNumber={customerPhone}
+                          countryCode={customerCountryCode || 'US'}
+                          onPhoneNumberChange={setCustomerPhone}
+                          onCountryCodeChange={setCustomerCountryCode}
+                          placeholder="Passenger phone number"  
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Flight Number - only for airport taxi */}
+                  {selectedService?.type === "airport_taxi" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                        Flight Number
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={flightNumber}
+                        onChange={(e) => setFlightNumber(e.target.value)}
+                        placeholder="e.g., AA123"
+                        maxLength={20}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* Vehicle Services Section - shown on step 1 after vehicle selection */}
+            {currentStepIndex === 1 && selectedRegion && isAuthenticated && false && (
               <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1" id="vehicle-services-section">
                 <h2 className="H2 mb-3">Additional Services</h2>
                 <div className="flex flex-wrap gap-2 p-1">

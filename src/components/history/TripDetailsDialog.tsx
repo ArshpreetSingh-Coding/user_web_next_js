@@ -131,7 +131,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const path = useMemo(() => {
         return routePath.length > 0 ? routePath : [];
     }, [routePath]);
-
+    console.log("path lat longs ->",path)
     const handleRatingSubmitted = () => {
         // Refresh the page or refetch data after rating is submitted
         window.location.reload();
@@ -141,7 +141,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-none max-sm:rounded-none sm:max-w-4xl sm:bg-[#F9FAFB] w-[70%]">
+            <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-full max-sm:rounded-none sm:max-w-4xl sm:bg-[#F9FAFB]">
 
                 {/* --- MOBILE VIEW (Premium Design) --- */}
                 <div className="flex sm:hidden flex-col h-full bg-white overflow-y-auto">
@@ -154,7 +154,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     </div>
 
                     <div className="flex-1 px-4 py-5 space-y-5">
-                        <div className="max-w-xl mx-auto space-y-5">
+                        <div className="w-full space-y-5">
                             {/* Map & Basic Info Section */}
                             <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 p-3">
                                 <div className="relative w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-4">
@@ -190,17 +190,19 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 </div>
                             </div>
 
-                            {/* Rate Your Trip Card */}
-                            <div 
-                                onClick={() => setRatingDialogOpen(true)}
-                                className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
-                            >
-                                <div className="space-y-0.5">
-                                    <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
-                                    <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                            {/* Rate Your Trip Card - Only for Completed rides */}
+                            {displayRide.status === "Completed" && (
+                                <div 
+                                    onClick={() => setRatingDialogOpen(true)}
+                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
+                                >
+                                    <div className="space-y-0.5">
+                                        <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
+                                        <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                                    </div>
+                                    <ChevronRight className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-gray-400" />
-                            </div>
+                            )}
 
                             {/* Trip Details Card */}
                             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
@@ -251,6 +253,42 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     )}
                                 </div>
                             </div>
+
+                            {/* Scheduled Ride Booking Details */}
+                            {displayRide.status === "Scheduled" && (
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                    <h3 className="font-bold text-gray-900 text-base">{t("Booking Details")}</h3>
+                                    
+                                    {displayRide.flightNumber && (
+                                        <div className="bg-blue-50 rounded-lg p-4">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-600">{t("Flight Number")}:</span>
+                                                <span className="text-sm font-semibold text-blue-900">{displayRide.flightNumber}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {displayRide.customerNote && (
+                                        <div className="bg-amber-50 rounded-lg p-4">
+                                            <h4 className="text-sm font-medium text-gray-700 mb-1">{t("Customer Note")}</h4>
+                                            <p className="text-sm text-gray-600">{displayRide.customerNote}</p>
+                                        </div>
+                                    )}
+
+                                    {displayRide.vehicleName && (
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-gray-600">{t("Vehicle Type")}:</span>
+                                            <span className="text-sm font-medium text-gray-900">{displayRide.vehicleName}</span>
+                                        </div>
+                                    )}
+
+                                    {/* {displayRide.isModifiable && (
+                                        <div className="bg-green-50 rounded-lg p-3">
+                                            <p className="text-xs text-green-700 text-center">{t("This booking can be modified")}</p>
+                                        </div>
+                                    )} */}
+                                </div>
+                            )}
 
                             {/* Get Help Card */}
                             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 mb-8">
@@ -320,17 +358,19 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         {/* Right Column: Actions & Details */}
                         <div className="w-full md:w-2/5 p-4 flex flex-col gap-4 bg-[#F9FAFB]">
 
-                            {/* Rate Your Trip Card */}
-                            <div 
-                                onClick={() => setRatingDialogOpen(true)}
-                                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-                            >
-                                <div>
-                                    <h3 className="font-bold text-gray-900">{t("Rate Your Trip")}</h3>
-                                    <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                            {/* Rate Your Trip Card - Only for Completed rides */}
+                            {displayRide.status === "Completed" && (
+                                <div 
+                                    onClick={() => setRatingDialogOpen(true)}
+                                    className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                                >
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">/* Line 329 omitted */</h3>
+                                        <p className="text-sm text-gray-500">/* Line 330 omitted */</p>
+                                    </div>
+                                    <ChevronRight className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-gray-400" />
-                            </div>
+                            )}
 
                             {/* Trip Details Card */}
                             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-2">
@@ -415,6 +455,42 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     )}
                                 </div>
                             </div>
+
+                            {/* Scheduled Ride Booking Details - Desktop */}
+                            {displayRide.status === "Scheduled" && (
+                                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                                    <h3 className="font-bold text-gray-900">{t("Booking Details")}</h3>
+                                    
+                                    {displayRide.flightNumber && (
+                                        <div className="bg-blue-50 rounded-lg p-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-600">{t("Flight Number")}:</span>
+                                                <span className="text-sm font-semibold text-blue-900">{displayRide.flightNumber}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {displayRide.customerNote && (
+                                        <div className="bg-amber-50 rounded-lg p-3">
+                                            <h4 className="text-xs font-medium text-gray-700 mb-1">{t("Customer Note")}</h4>
+                                            <p className="text-sm text-gray-600">{displayRide.customerNote}</p>
+                                        </div>
+                                    )}
+
+                                    {displayRide.vehicleName && (
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-sm text-gray-600">{t("Vehicle Type")}:</span>
+                                            <span className="text-sm font-medium text-gray-900">{displayRide.vehicleName}</span>
+                                        </div>
+                                    )}
+
+                                    {/* {displayRide.isModifiable && (
+                                        <div className="bg-green-50 rounded-lg p-2">
+                                            <p className="text-xs text-green-700 text-center">{t("This booking can be modified")}</p>
+                                        </div>
+                                    )} */}
+                                </div>
+                            )}
 
                             {/* Get Help */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">

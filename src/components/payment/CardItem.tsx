@@ -35,7 +35,7 @@ export function CardItem({ card, selected, onClick, onDelete }: CardItemProps) {
 
       const response = await deleteStripeCard(cardId);
 
-      if (response.flag === 143 || response.flag === 200) {
+      if (response.flag === 144 || response.flag === 200) {
         toast.success('Card deleted successfully', { id: 'delete-stripe-card' });
         onDelete?.();
       } else {

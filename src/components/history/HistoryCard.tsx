@@ -2,7 +2,7 @@ import Image from "next/image";
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 
-export type RideStatus = "Completed" | "Cancelled" | "Scheduled";
+export type RideStatus = "Completed" | "Cancelled" | "Scheduled" | "Missed Schedule";
 
 export interface RideHistoryItem {
     id: number | string;
@@ -12,6 +12,7 @@ export interface RideHistoryItem {
     price: number;
     date: string; // ISO string
     status: RideStatus;
+    statusMessage: any,
     // Extended details for Trip Dialog
     pickupLat: number;
     pickupLng: number;
@@ -27,6 +28,14 @@ export interface RideHistoryItem {
     ride_type?: number;
     historyIcon?: string;
     pickupId?: number | string; // For scheduled rides cancellation
+    // Scheduled ride specific fields
+    flightNumber?: string;
+    customerNote?: string;
+    vehicleName?: string;
+    vehicleServices?: string;
+    isModifiable?: boolean;
+    isAddressModifiable?: boolean;
+    schedulerAlarmTime?: number;
 }
 
 interface HistoryCardProps {
@@ -51,6 +60,7 @@ export function HistoryCard({ ride, onClick, onCancel }: HistoryCardProps) {
 
     const isCompleted = ride.status === "Completed";
     const isScheduled = ride.status === "Scheduled";
+    const isClickable = isCompleted || isScheduled;
 
     const handleCancelClick = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent card click event
@@ -59,8 +69,8 @@ export function HistoryCard({ ride, onClick, onCancel }: HistoryCardProps) {
 
     return (
         <div
-            onClick={() => isCompleted && onClick?.(ride)}
-            className={`bg-white rounded-xl shadow-[0px_1px_3px_rgba(16,24,40,0.1),0px_1px_2px_rgba(16,24,40,0.06)] border border-gray-100 p-4 flex items-center gap-4 ${isCompleted ? "hover:shadow-md transition-shadow cursor-pointer" : ""
+            onClick={() => isClickable && onClick?.(ride)}
+            className={`bg-white rounded-xl shadow-[0px_1px_3px_rgba(16,24,40,0.1),0px_1px_2px_rgba(16,24,40,0.06)] border border-gray-100 p-4 flex items-center gap-4 ${isClickable ? "hover:shadow-md transition-shadow cursor-pointer" : ""
                 }`}
         >
             {/* Car Image */}
@@ -105,7 +115,7 @@ export function HistoryCard({ ride, onClick, onCancel }: HistoryCardProps) {
                             </button>
                         )}
                         <span className={`px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getStatusColor(ride.status)}`}>
-                            {ride.status}
+                            {ride.statusMessage ?? ride.status}
                         </span>
                     </div>
                 </div>

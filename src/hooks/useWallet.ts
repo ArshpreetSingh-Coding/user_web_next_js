@@ -49,7 +49,7 @@ export function useWallet() {
         staleTime: 5 * 60 * 1000,
     });
 
-    console.log('💰 Wallet Data:', walletQuery.data?.data);
+    // console.log('💰 Wallet Data:', walletQuery.data?.data);
 
     // Extract payment details from the response
     const responseData = walletQuery.data?.data;
@@ -73,7 +73,7 @@ export function useWallet() {
 
     return {
         balance: responseData?.jugnoo_balance || 0,
-        currency: responseData?.currency || '$',
+        currency: responseData?.currency || '₹',
         transactions: transactionsQuery.data?.transactions || [],
         stripeCards,
         squareCards,
@@ -98,7 +98,7 @@ export function useWallet() {
                 toast.error("Minimum recharge amount is 50");
                 return;
             }
-
+            
             return rechargeWallet({
                 driver_phone_no: user.phone_no.replace(/^\+/, ''),
                 amount,

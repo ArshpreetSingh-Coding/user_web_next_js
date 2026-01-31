@@ -93,7 +93,7 @@ export function RechargeWalletModal({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent
           showCloseButton={false}
-          className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl"
+          className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl z-[100]"
         >
           <DialogTitle className="sr-only">Recharge Wallet</DialogTitle>
 

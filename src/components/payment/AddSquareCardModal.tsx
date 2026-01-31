@@ -15,6 +15,8 @@ interface AddSquareCardModalProps {
   squareLocationId: string;
 }
 
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
 /**
  * AddSquareCardModal Component
  * Handles Square card addition flow:
@@ -79,7 +81,7 @@ export function AddSquareCardModal({
 
     const timer = setTimeout(() => {
       initializeSquare();
-    }, 50);
+    }, 200); // Increased timeout to ensure Dialog DOM is fully ready
 
     return () => clearTimeout(timer);
   }, [isOpen, squareLoaded]);
@@ -89,7 +91,7 @@ export function AddSquareCardModal({
    */
   const initializeSquare = async () => {
     if (!window.Square || !squareApplicationId || !squareLocationId) {
-      toast.error("Square configuration missing");
+      // toast.error("Square configuration missing");
       return;
     }
 
@@ -184,18 +186,19 @@ export function AddSquareCardModal({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl z-[200]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <CreditCard className="h-6 w-6 text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800">Add New Card</h2>
+            <DialogTitle className="text-xl font-bold text-gray-800">Add New Card</DialogTitle>
           </div>
           <button
             onClick={onClose}
@@ -261,7 +264,7 @@ export function AddSquareCardModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

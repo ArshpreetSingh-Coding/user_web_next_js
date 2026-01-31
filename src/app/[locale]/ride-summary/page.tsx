@@ -247,96 +247,83 @@ export default function RideSummaryPage() {
                     );
                   })}
 
-                  {/* Stripe Cards Section */}
+                  {/* ---------- STRIPE CARDS ---------- */}
                   {isStripeEnabled && (
-                    <div className="pt-2">
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Saved Cards (Stripe)</h3>
+                    <div className="pt-3">
+                      <h3 className="text-sm font-semibold mb-2">Saved Cards (Stripe)</h3>
+
                       <div className="space-y-2">
-                        {paymentDetails.stripeCards.map((card, index) => {
-                          // Use id or card_id, whichever exists
-                          const cardId = card.card_id || card.id || `card-${index}`;
-                          const isCardSelected = selectedPaymentMethod === 'stripe_card' && selectedCardId == cardId;
+                        {paymentDetails.stripeCards.map((card) => {
+                          const isSelected =
+                            selectedPaymentMethod === "stripe_card" &&
+                            selectedCard?.card_id === card.card_id;
 
                           return (
                             <CardItem
-                              key={cardId}
+                              key={card.card_id}
                               card={card}
-                              selected={isCardSelected}
+                              selected={isSelected}
                               onClick={() => {
-                                console.log('Selecting Stripe card:', cardId);
-                                setSelectedPaymentMethod('stripe_card');
-                                setSelectedCardId(cardId);
-                                setSelectedSquareCardId(null); // Clear Square selection
+                                setSelectedPaymentMethod("stripe_card");
                                 setSelectedCard(card);
+                                setSelectedCardId(card.card_id);
+                                setSelectedSquareCard(null);
+                                setSelectedSquareCardId(null);
                               }}
                               onDelete={() => {
-                                refreshPaymentDetails(); // Refresh the card list
-                                toast.success('Card deleted. Please select a payment method.');
-                                // Clear selection if deleted card was selected
-                                if (isCardSelected) {
-                                  setSelectedPaymentMethod(null);
-                                  setSelectedCardId(null);
-                                }
+                                refreshPaymentDetails();
+                                toast.success("Card deleted");
                               }}
                             />
                           );
                         })}
                       </div>
 
-                      {/* Add New Card Button */}
                       <button
                         onClick={() => setIsAddCardModalOpen(true)}
-                        className="w-full mt-3 p-4 border-2 border-dashed border-primary/30 rounded-xl hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 text-primary font-semibold"
+                        className="w-full mt-3 border-2 border-dashed p-4 rounded-xl text-primary font-semibold"
                       >
-                        <Plus className="h-5 w-5" />
                         Add New Stripe Card
                       </button>
                     </div>
                   )}
 
-                  {/* Square Cards Section */}
+                  {/* ---------- SQUARE CARDS ---------- */}
                   {isSquareEnabled && (
-                    <div className="pt-2">
-                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Saved Cards (Square)</h3>
+                    <div className="pt-3">
+                      <h3 className="text-sm font-semibold mb-2">Saved Cards (Square)</h3>
+
                       <div className="space-y-2">
-                        {paymentDetails.squareCards.map((card, index) => {
-                          // Use id or card_id, whichever exists
-                          const cardId = card.card_id || card.id;
-                          console.log("CARD ID:", cardId, "SELECTED:", selectedSquareCardId, selectedPaymentMethod);
-                          const isCardSelected = selectedPaymentMethod === 'square_card' && selectedSquareCardId == cardId;
-                          console.log("IS SELECTED:", isCardSelected, selectedPaymentMethod === 'square_card', selectedSquareCardId === cardId);
+                        {paymentDetails.squareCards.map((card: any) => {
+                          const isSelected =
+                            selectedPaymentMethod === "square_card" &&
+                            selectedSquareCard?.card_id === card.card_id;
+
                           return (
                             <SquareCardItem
-                              key={cardId}
+                              key={card.card_id}
                               card={card}
-                              selected={isCardSelected}
+                              selected={isSelected}
                               onClick={() => {
-                                console.log('Selecting Square card:', cardId);
-                                setSelectedPaymentMethod('square_card');
-                                setSelectedSquareCardId(cardId ?? null);
-                                setSelectedCardId(null); // Clear Stripe selection
+                                setSelectedPaymentMethod("square_card");
                                 setSelectedSquareCard(card);
+                                setSelectedSquareCardId(card.card_id);
+                                setSelectedCard(null);
+                                setSelectedCardId(null);
                               }}
                               onDelete={() => {
-                                refreshPaymentDetails(); // Refresh the card list
-                                toast.success('Card deleted. Please select a payment method.');
-                                // Clear selection if deleted card was selected
-                                if (isCardSelected) {
-                                  setSelectedPaymentMethod(null);
-                                  setSelectedSquareCardId(null);
-                                }
+                                refreshPaymentDetails();
+                                toast.success("Card deleted");
                               }}
                             />
                           );
                         })}
                       </div>
 
-                      {/* Add New Square Card Button */}
                       <button
                         onClick={() => setIsAddSquareCardModalOpen(true)}
-                        className="w-full mt-3 p-4 border-2 border-dashed border-primary/30 rounded-xl hover:border-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 text-primary font-semibold"
+                        className="w-full mt-3 border-2 border-dashed p-4 rounded-xl text-primary font-semibold"
                       >
-                        <Plus className="h-5 w-5" />
                         Add New Square Card
                       </button>
                     </div>

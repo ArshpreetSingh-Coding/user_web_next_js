@@ -26,6 +26,7 @@ interface BookingState {
 
   // Schedule
   scheduledDateTime: Date | null; // Scheduled date and time
+  isScheduleDateTouched: boolean;
 
   // Region/Vehicle selection
   selectedRegion: VehicleRegion | null;
@@ -86,6 +87,7 @@ interface BookingState {
   setDropoffFromPlace: (place: PlaceResult) => void;
   setStops: (stops: Stop[]) => void;
   setScheduledDateTime: (dateTime: Date | null) => void;
+  setIsScheduleDateTouched: (touched: boolean) => void;
   setServiceData: (services: any[]) => void;
   setSelectedService: (service: any | null) => void;
   setPickupCityCurrency: (currency: string | null) => void;
@@ -138,6 +140,7 @@ export const useBookingStore = create<BookingState>()(
         dropoff: null,
         stops: [],
         scheduledDateTime: null,
+        isScheduleDateTouched: false,
         selectedRegion: null,
         availableVehicles: [],
         priceEstimate: null,
@@ -189,6 +192,18 @@ export const useBookingStore = create<BookingState>()(
           console.log('📍 Pickup set from place:', bookingLocation);
         },
 
+        setScheduledDateTime: (dateTime) =>
+          set(
+            {
+              scheduledDateTime: dateTime,
+              isScheduleDateTouched: true, // 👈 key line
+            },
+            false,
+            'booking/setScheduledDateTime'
+          ),
+          setIsScheduleDateTouched: (touched) =>
+            set({ isScheduleDateTouched: touched }, false, 'booking/setIsScheduleDateTouched'),
+
         setDropoffFromPlace: (place) => {
           const bookingLocation = placeToBookingLocation(place);
           set({
@@ -205,9 +220,6 @@ export const useBookingStore = create<BookingState>()(
 
         setStops: (stops) =>
           set({ stops }, false, 'booking/setStops'),
-
-        setScheduledDateTime: (dateTime) =>
-          set({ scheduledDateTime: dateTime }, false, 'booking/setScheduledDateTime'),
 
         setServiceData: (services) =>
           set({ serviceData: services }, false, 'booking/setServiceData'),
@@ -395,6 +407,7 @@ export const useBookingStore = create<BookingState>()(
               routeDuration: null,
               routeDistanceText: null,
               routeDurationText: null,
+              isScheduleDateTouched: false,
             },
             false,
             'booking/resetBooking'

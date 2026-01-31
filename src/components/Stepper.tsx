@@ -52,6 +52,7 @@ export default function Stepper({
   subProgress = 0,
   onStepChange,
 }: StepperProps) {
+  
   const isControlled = typeof onStepChange === "function";
   const [internalStep, setInternalStep] = React.useState(currentStep);
 

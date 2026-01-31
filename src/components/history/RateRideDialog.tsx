@@ -76,10 +76,11 @@ export function RateRideDialog({ open, onOpenChange, ride, onRatingSubmitted }: 
                     {/* Header */}
                     <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-4 border-b bg-white">
                         <DialogTitle className="text-lg font-bold">{t("Rate Your Trip")}</DialogTitle>
-                        {/* <button onClick={handleClose} className="p-1">
+                        <button onClick={handleClose} className="p-1">
                             <X className="h-5 w-5 text-gray-500" /> 
-                        </button> */}
+                        </button>
                     </div>
+
 
                     <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
                         {/* Driver Info */}
