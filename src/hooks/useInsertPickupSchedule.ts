@@ -5,6 +5,7 @@ import { insertPickupSchedule } from "@/lib/ride-booking/findDriver";
 import { useAuthStore } from "@/stores/auth.store";
 import { useBookingStore } from "@/stores/booking.store";
 import type { InsertPickupScheduleRequest, InsertPickupScheduleResponse } from "@/types";
+import { getCountryCallingCode, CountryCode } from "libphonenumber-js";
 
 /**
  * Creates a pickup schedule booking using current booking + session state.
@@ -20,6 +21,10 @@ export function useInsertPickupSchedule() {
     passengerCount,
     luggageCount,
     driverNote,
+    flightNumber,
+    customerName,
+    customerPhone,
+    customerCountryCode,
     selectedPaymentMethod,
     selectedCardId,
     selectedSquareCardId,
@@ -47,6 +52,20 @@ export function useInsertPickupSchedule() {
       throw new Error("Dropoff location is incomplete");
     }
 
+    let formattedPhone = undefined;
+    const countryCode = customerCountryCode || 'US';
+
+    if (customerPhone) {
+      try {
+        // convert ISO (e.g. IN) to calling code (e.g. 91)
+        const callingCode = getCountryCallingCode(countryCode as CountryCode);
+        formattedPhone = `${callingCode}${customerPhone}`;
+      } catch (error) {
+        console.warn('Invalid country code:', countryCode);
+        formattedPhone = `${countryCode}${customerPhone}`;
+      }
+    }
+
     const payload: InsertPickupScheduleRequest = {
       sessionId,
       sessionIdentifier,
@@ -63,12 +82,15 @@ export function useInsertPickupSchedule() {
       passengerCount: passengerCount,
       luggageCount: luggageCount,
       customerNote: driverNote || undefined,
-      preferredPaymentMode: 
-        selectedPaymentMethod === "cash" ? 1 : 
-        selectedPaymentMethod === "stripe_card" ? 9 : 
-        selectedPaymentMethod === "square_card" ? 73 : 1, // Default to cash if unknown
-      cardId: selectedPaymentMethod === "stripe_card" ? selectedCardId : 
-              selectedPaymentMethod === "square_card" ? selectedSquareCardId : undefined,
+      flightNumber: flightNumber || undefined,
+      customerName: customerName || undefined,
+      customerPhoneNo: formattedPhone,
+      preferredPaymentMode:
+        selectedPaymentMethod === "cash" ? 1 :
+          selectedPaymentMethod === "stripe_card" ? 9 :
+            selectedPaymentMethod === "square_card" ? 73 : 1, // Default to cash if unknown
+      cardId: selectedPaymentMethod === "stripe_card" ? selectedCardId :
+        selectedPaymentMethod === "square_card" ? selectedSquareCardId : undefined,
     };
 
     setIsSubmitting(true);
@@ -80,6 +102,10 @@ export function useInsertPickupSchedule() {
   }, [
     dropoff,
     driverNote,
+    flightNumber,
+    customerName,
+    customerPhone,
+    customerCountryCode,
     luggageCount,
     passengerCount,
     pickup,

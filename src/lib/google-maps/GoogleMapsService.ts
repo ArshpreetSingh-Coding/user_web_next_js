@@ -11,7 +11,7 @@ class GoogleMapsService {
   private apiKey: string | null = null;
   private stateListeners: Set<StateChangeCallback> = new Set();
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): GoogleMapsService {
     if (!this.instance) {
@@ -100,7 +100,7 @@ class GoogleMapsService {
       script.defer = true;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error('Failed to load Google Maps script'));
-      
+
       document.head.appendChild(script);
     });
   }
@@ -119,7 +119,7 @@ class GoogleMapsService {
     });
   }
 
- 
+
   addMarker(
     map: google.maps.Map,
     position: { lat: number; lng: number },
@@ -155,7 +155,7 @@ class GoogleMapsService {
 
     const from = new google.maps.LatLng(point1.lat, point1.lng);
     const to = new google.maps.LatLng(point2.lat, point2.lng);
-    
+
     return google.maps.geometry.spherical.computeDistanceBetween(from, to);
   }
 
@@ -256,7 +256,7 @@ class GoogleMapsService {
     }
   }
 
-   
+
   plotMap(container: HTMLElement, options: MapOptions): google.maps.Map | null {
     if (!this.isReady()) {
       console.warn('⚠️ Google Maps not ready yet. Call loadApiKey() first.');
@@ -307,6 +307,7 @@ class GoogleMapsService {
     duration: number; // in seconds
     distanceText: string;
     durationText: string;
+    path: Array<{ lat: number; lng: number }>;
   } | null> {
     if (!this.isReady()) {
       console.warn('⚠️ Google Maps not ready. Cannot calculate route.');
@@ -318,9 +319,9 @@ class GoogleMapsService {
 
       const waypointsFormatted: google.maps.DirectionsWaypoint[] = waypoints
         ? waypoints.map(wp => ({
-            location: new google.maps.LatLng(wp.lat, wp.lng),
-            stopover: true,
-          }))
+          location: new google.maps.LatLng(wp.lat, wp.lng),
+          stopover: true,
+        }))
         : [];
 
       const request: google.maps.DirectionsRequest = {
@@ -350,6 +351,12 @@ class GoogleMapsService {
       const distanceInKm = (totalDistance / 1000).toFixed(2);
       const durationInMinutes = Math.ceil(totalDuration / 60);
 
+      // Extract path
+      const path = result.routes[0].overview_path.map(point => ({
+        lat: point.lat(),
+        lng: point.lng()
+      }));
+
       console.log('🗺️ Route calculated:', {
         distance: `${distanceInKm} km`,
         duration: `${durationInMinutes} minutes`,
@@ -360,6 +367,7 @@ class GoogleMapsService {
         duration: totalDuration,
         distanceText: `${distanceInKm} km`,
         durationText: `${durationInMinutes} min`,
+        path
       };
     } catch (error) {
       console.error('❌ Failed to calculate route:', error);

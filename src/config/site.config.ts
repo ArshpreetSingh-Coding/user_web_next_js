@@ -1,5 +1,5 @@
 export const siteConfig = {
-  name: 'TaxiBook',
+  name: 'Book Ride With Jugnoo',
   description: 'Book your ride in seconds - Fast, reliable, and affordable taxi service',
   url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:4000',
 

@@ -2,8 +2,10 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { RideHistoryItem } from "./HistoryCard";
+import { RateRideDialog } from "./RateRideDialog";
 import { format } from "date-fns";
 import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
+import { mapsService } from "@/lib/google-maps/GoogleMapsService";
 import { ChevronRight, Clock, CreditCard, ChevronDown, MapPin, User, Navigation, X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "@/lib/i18n/TranslationsProvider";
@@ -13,6 +15,7 @@ import { useGoogleMapsLoaded } from "@/stores/googleMaps.store";
 import { fetchRideSummary } from "@/lib/api/history.api";
 import { mapApiRideToRideHistoryItem } from "@/hooks/useHistory";
 import { ApiRideHistoryItem } from "@/types";
+import { toast } from "sonner";
 
 interface TripDetailsDialogProps {
     open: boolean;
@@ -39,6 +42,12 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const [showPriceBreakdown, setShowPriceBreakdown] = useState(false);
     const [detailedRide, setDetailedRide] = useState<RideHistoryItem | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [routePath, setRoutePath] = useState<{ lat: number; lng: number }[]>([]);
+    const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+
+    useEffect(() => {
+        setRoutePath([]); // Reset path when ride changes
+    }, [ride]);
 
     useEffect(() => {
         let active = true;
@@ -54,6 +63,8 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
                 const response = await fetchRideSummary({
                     engagement_id: ride.engagementId || ride.id,
+                    product_type: ride.product_type,
+                    ride_type: ride.ride_type,
                     locale: "en"
                 });
 
@@ -61,10 +72,12 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     // Assuming response.data is the single ApiRideHistoryItem object
                     // We cast it because the API response type is generic 'any' currently
                     const mapped = mapApiRideToRideHistoryItem(response.data as ApiRideHistoryItem);
+                    console.log("ride history mapped", mapped);
                     setDetailedRide(mapped);
                 }
             } catch (error) {
-                console.error("Failed to fetch ride summary:", error);
+                console.log("Failed to fetch ride summary:", error);
+                toast.error("Failed to fetch ride summary");
             } finally {
                 if (active) setIsLoading(false);
             }
@@ -93,19 +106,42 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
         };
     }, [displayRide]);
 
+    useEffect(() => {
+        if (!displayRide || !isLoaded) return;
+
+        const fetchRoute = async () => {
+            try {
+                const result = await mapsService.calculateRoute(
+                    { lat: displayRide.pickupLat, lng: displayRide.pickupLng },
+                    { lat: displayRide.dropLat, lng: displayRide.dropLng }
+                );
+                if (result && result.path) {
+                    setRoutePath(result.path);
+                }
+            } catch (error) {
+                console.log("Failed to fetch route path:", error);
+                toast.error("Failed to fetch route path");
+            }
+        };
+
+        fetchRoute();
+    }, [displayRide, isLoaded]);
+
+    // Only use the actual route path, no fallback to straight line
     const path = useMemo(() => {
-        if (!displayRide) return [];
-        return [
-            { lat: displayRide.pickupLat, lng: displayRide.pickupLng },
-            { lat: displayRide.dropLat, lng: displayRide.dropLng },
-        ];
-    }, [displayRide]);
+        return routePath.length > 0 ? routePath : [];
+    }, [routePath]);
+    console.log("path lat longs ->", path)
+    const handleRatingSubmitted = () => {
+        // Refresh the page or refetch data after rating is submitted
+        window.location.reload();
+    };
 
     if (!displayRide) return null;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-none max-sm:rounded-none sm:max-w-3xl sm:bg-[#F9FAFB] w-full">
+            <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-full max-sm:rounded-none sm:max-w-4xl sm:bg-[#F9FAFB]">
 
                 {/* --- MOBILE VIEW (Premium Design) --- */}
                 <div className="flex sm:hidden flex-col h-full bg-white overflow-y-auto">
@@ -118,7 +154,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     </div>
 
                     <div className="flex-1 px-4 py-5 space-y-5">
-                        <div className="max-w-xl mx-auto space-y-5">
+                        <div className="w-full space-y-5">
                             {/* Map & Basic Info Section */}
                             <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 p-3">
                                 <div className="relative w-full aspect-video bg-gray-100 rounded-xl overflow-hidden mb-4">
@@ -131,14 +167,16 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                         >
                                             <Marker position={{ lat: displayRide.pickupLat, lng: displayRide.pickupLng }} />
                                             <Marker position={{ lat: displayRide.dropLat, lng: displayRide.dropLng }} />
-                                            <Polyline
-                                                path={path}
-                                                options={{ 
-                                                    strokeColor: "var(--primary)", 
-                                                    strokeOpacity: 1, 
-                                                    strokeWeight: 4 
-                                                }}
-                                            />
+                                            {path.length > 0 && (
+                                                <Polyline
+                                                    path={path}
+                                                    options={{
+                                                        strokeColor: "var(--primary)",
+                                                        strokeOpacity: 1,
+                                                        strokeWeight: 4
+                                                    }}
+                                                />
+                                            )}
                                         </GoogleMap>
                                     ) : (
                                         <div className="flex items-center justify-center h-full text-gray-400">Loading Map...</div>
@@ -152,14 +190,19 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 </div>
                             </div>
 
-                            {/* Rate Your Trip Card */}
-                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors">
-                                <div className="space-y-0.5">
-                                    <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
-                                    <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                            {/* Rate Your Trip Card - Only for Completed rides */}
+                            {displayRide.status === "Completed" && (
+                                <div
+                                    onClick={() => setRatingDialogOpen(true)}
+                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
+                                >
+                                    <div className="space-y-0.5">
+                                        <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
+                                        <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                                    </div>
+                                    <ChevronRight className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-gray-400" />
-                            </div>
+                            )}
 
                             {/* Trip Details Card */}
                             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
@@ -211,6 +254,42 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 </div>
                             </div>
 
+                            {/* Scheduled Ride Booking Details */}
+                            {displayRide.status === "Scheduled" && (
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                    <h3 className="font-bold text-gray-900 text-base">{t("Booking Details")}</h3>
+
+                                    {displayRide.flightNumber && (
+                                        <div className="bg-blue-50 rounded-lg p-4">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-600">{t("Flight Number")}:</span>
+                                                <span className="text-sm font-semibold text-blue-900">{displayRide.flightNumber}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {displayRide.customerNote && (
+                                        <div className="bg-amber-50 rounded-lg p-4">
+                                            <h4 className="text-sm font-medium text-gray-700 mb-1">{t("Customer Note")}</h4>
+                                            <p className="text-sm text-gray-600">{displayRide.customerNote}</p>
+                                        </div>
+                                    )}
+
+                                    {displayRide.vehicleName && (
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-sm text-gray-600">{t("Vehicle Type")}:</span>
+                                            <span className="text-sm font-medium text-gray-900">{displayRide.vehicleName}</span>
+                                        </div>
+                                    )}
+
+                                    {/* {displayRide.isModifiable && (
+                                        <div className="bg-green-50 rounded-lg p-3">
+                                            <p className="text-xs text-green-700 text-center">{t("This booking can be modified")}</p>
+                                        </div>
+                                    )} */}
+                                </div>
+                            )}
+
                             {/* Get Help Card */}
                             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 mb-8">
                                 <div className="flex items-center gap-4">
@@ -234,9 +313,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         </button> */}
                     </div>
 
-                    <div className="flex flex-col md:flex-row h-[70vh] overflow-y-auto">
+                    <div className="flex flex-col md:flex-row h-[80vh] overflow-y-auto">
                         {/* Left Column: Map & Driver Info */}
-                        <div className="w-full md:w-5/12 p-4 flex flex-col gap-4 bg-white md:border-r">
+                        <div className="w-full md:w-3/5 p-4 flex flex-col gap-4 bg-white md:border-r">
                             {/* Map Area */}
                             <div className="relative w-full aspect-square md:aspect-4/5 bg-gray-100 rounded-xl overflow-hidden shadow-inner">
                                 {isLoaded ? (
@@ -248,14 +327,16 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     >
                                         <Marker position={{ lat: displayRide.pickupLat, lng: displayRide.pickupLng }} />
                                         <Marker position={{ lat: displayRide.dropLat, lng: displayRide.dropLng }} />
-                                        <Polyline
-                                            path={path}
-                                            options={{
-                                                strokeColor: "var(--primary)", // Primary theme color
-                                                strokeOpacity: 1,
-                                                strokeWeight: 4,
-                                            }}
-                                        />
+                                        {path.length > 0 && (
+                                            <Polyline
+                                                path={path}
+                                                options={{
+                                                    strokeColor: "var(--primary)",
+                                                    strokeOpacity: 1,
+                                                    strokeWeight: 4,
+                                                }}
+                                            />
+                                        )}
                                     </GoogleMap>
                                 ) : (
                                     <div className="flex items-center justify-center h-full text-gray-400">
@@ -275,16 +356,21 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         </div>
 
                         {/* Right Column: Actions & Details */}
-                        <div className="w-full md:w-7/12 p-4 flex flex-col gap-4 bg-[#F9FAFB]">
+                        <div className="w-full md:w-2/5 p-4 flex flex-col gap-4 bg-[#F9FAFB]">
 
-                            {/* Rate Your Trip Card */}
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
-                                <div>
-                                    <h3 className="font-bold text-gray-900">{t("Rate Your Trip")}</h3>
-                                    <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                            {/* Rate Your Trip Card - Only for Completed rides */}
+                            {displayRide.status === "Completed" && (
+                                <div
+                                    onClick={() => setRatingDialogOpen(true)}
+                                    className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                                >
+                                    <div>
+                                        <h3 className="font-bold text-gray-900">/* Line 329 omitted */</h3>
+                                        <p className="text-sm text-gray-500">/* Line 330 omitted */</p>
+                                    </div>
+                                    <ChevronRight className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-gray-400" />
-                            </div>
+                            )}
 
                             {/* Trip Details Card */}
                             <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-2">
@@ -335,7 +421,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <div className="p-1.5 bg-primary/10 rounded text-primary">
                                             {/* Cash Icon/Wallet Icon */}
-                                            <span className="text-xs font-bold">₹</span>
+                                            <span className="text-xs font-bold p-1.5">₹</span>
                                         </div>
                                         {displayRide.paymentMethod}
                                     </div>
@@ -370,6 +456,42 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 </div>
                             </div>
 
+                            {/* Scheduled Ride Booking Details - Desktop */}
+                            {displayRide.status === "Scheduled" && (
+                                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
+                                    <h3 className="font-bold text-gray-900">{t("Booking Details")}</h3>
+
+                                    {displayRide.flightNumber && (
+                                        <div className="bg-blue-50 rounded-lg p-3">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-sm text-gray-600">{t("Flight Number")}:</span>
+                                                <span className="text-sm font-semibold text-blue-900">{displayRide.flightNumber}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {displayRide.customerNote && (
+                                        <div className="bg-amber-50 rounded-lg p-3">
+                                            <h4 className="text-xs font-medium text-gray-700 mb-1">{t("Customer Note")}</h4>
+                                            <p className="text-sm text-gray-600">{displayRide.customerNote}</p>
+                                        </div>
+                                    )}
+
+                                    {displayRide.vehicleName && (
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-sm text-gray-600">{t("Vehicle Type")}:</span>
+                                            <span className="text-sm font-medium text-gray-900">{displayRide.vehicleName}</span>
+                                        </div>
+                                    )}
+
+                                    {/* {displayRide.isModifiable && (
+                                        <div className="bg-green-50 rounded-lg p-2">
+                                            <p className="text-xs text-green-700 text-center">{t("This booking can be modified")}</p>
+                                        </div>
+                                    )} */}
+                                </div>
+                            )}
+
                             {/* Get Help */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center gap-3">
@@ -385,6 +507,14 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     </div>
                 </div>
             </DialogContent>
+
+            {/* Rate Ride Dialog */}
+            <RateRideDialog
+                open={ratingDialogOpen}
+                onOpenChange={setRatingDialogOpen}
+                ride={displayRide}
+                onRatingSubmitted={handleRatingSubmitted}
+            />
         </Dialog>
     );
 }

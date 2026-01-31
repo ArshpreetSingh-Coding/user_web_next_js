@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import axios from 'axios';
 import { RideHistoryItem, RideStatus } from "../components/history/HistoryCard";
 import { useAuthStore } from "@/stores/auth.store";
@@ -17,14 +17,17 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
     // Mapping status based on common Jugnoo flags
     if (isScheduled) {
         status = "Scheduled";
-    } else if (apiRide.is_cancelled_ride === 1 || apiRide.autos_status === 5) {
+    } else if (apiRide.is_cancelled_ride === 1) {
         status = "Cancelled";
     } else if (apiRide.autos_status === 1) {
         status = "Scheduled";
-    } else if (apiRide.autos_status === 6) {
+    } else if (apiRide.autos_status === 3 || apiRide.autos_status === 5) {
         status = "Completed";
     }
-
+    const statusMessage =
+        status === "Cancelled" && apiRide.autos_status === 5
+            ? "Missed Schedule"
+            : status;
     const pickupAddr = apiRide.pickup_location_address || apiRide.pickup_address;
     const dropAddr = apiRide.drop_location_address || apiRide.drop_address;
 
@@ -39,6 +42,7 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
         price: Number(apiRide.customer_fare_estimate || apiRide.amount || 0),
         date: apiRide.pickup_time || apiRide.created_at,
         status: status,
+        statusMessage: statusMessage,
         pickupLat: apiRide.latitude || apiRide.pickup_latitude || 0,
         pickupLng: apiRide.longitude || apiRide.pickup_longitude || 0,
         dropLat: apiRide.op_drop_latitude || apiRide.drop_latitude || 0,
@@ -49,11 +53,21 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
         distance: (apiRide.estimated_distance || apiRide.distance) ? `${apiRide.estimated_distance || apiRide.distance} ${apiRide.distance_unit || "km"}` : "0 km",
         duration: apiRide.ride_time ? `${apiRide.ride_time} min` : "0 min",
         paymentMethod: apiRide.preferred_payment_mode === 1 ? "Cash" : "Cash",
-        historyIcon: apiRide.history_icon
+        product_type: apiRide.product_type,
+        ride_type: apiRide.ride_type,
+        historyIcon: apiRide.history_icon,
+        pickupId: apiRide.pickup_id || apiRide.schedule_pickup_id, // For scheduled ride cancellation
+        flightNumber: apiRide.flight_number || "",
+        customerNote: apiRide.customer_note || "",
+        vehicleName: apiRide.vehicle_name || "",
+        vehicleServices: apiRide.vehicle_services || "[]",
+        isModifiable: apiRide.modifiable === 1,
+        isAddressModifiable: apiRide.address_modifiable === 1,
+        schedulerAlarmTime: apiRide.scheduler_alarm_time
     };
 };
 
-export function useHistory(errorMessage: string) {
+export function useHistory(errorMessage: string, rideType?: string) {
     const { isAuthenticated } = useAuthStore();
 
     const [rides, setRides] = useState<RideHistoryItem[]>([]);
@@ -61,6 +75,12 @@ export function useHistory(errorMessage: string) {
     const [activeTab, setActiveTab] = useState<TabType>("All");
     const [selectedRide, setSelectedRide] = useState<RideHistoryItem | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0); // Page index (0, 1, 2, ...)
+    const [historySize, setHistorySize] = useState(0); // Total number of history items
+    const [isMobile, setIsMobile] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const ITEMS_PER_PAGE = 12;
 
     // Filter rides based on active tab
     const filteredRides = useMemo(() => {
@@ -69,6 +89,19 @@ export function useHistory(errorMessage: string) {
             return ride.status === activeTab;
         });
     }, [rides, activeTab]);
+
+    // Calculate total pages based on history size
+    const totalPages = Math.ceil(historySize / ITEMS_PER_PAGE);
+
+    // Detect mobile on mount
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Fetch ride history
     useEffect(() => {
@@ -79,16 +112,60 @@ export function useHistory(errorMessage: string) {
 
             try {
                 setIsLoading(true);
+                const startFrom = currentPage * ITEMS_PER_PAGE;
+
+                // Map ride type to selected_service
+                let selected_service: number | undefined;
+                if (rideType === 'daily') {
+                    selected_service = 1;
+                } else if (rideType === 'outstation') {
+                    selected_service = 3;
+                } else if (rideType === 'airport') {
+                    selected_service = 4;
+                }
+
+                // Map active tab to ride status filters
+                let ride_status_filter: number | undefined;
+                let past_ride_status_filter: number | undefined;
+
+                if (activeTab === 'Scheduled') {
+                    ride_status_filter = 1;
+                } else if (activeTab === 'Completed') {
+                    ride_status_filter = 0;
+                    past_ride_status_filter = 1;
+                } else if (activeTab === 'Cancelled') {
+                    ride_status_filter = 2;
+                    past_ride_status_filter = 2;
+                }
+                // For 'All' tab, don't add any status filters
+
                 const response = await fetchRideHistory({
-                    start_from: "0",
+                    start_from: startFrom,
                     show_custom_fields: 1,
                     login_type: "0",
-                    locale: "en"
+                    locale: "en",
+                    ...(selected_service !== undefined && { selected_service }),
+                    ...(ride_status_filter !== undefined && { ride_status_filter }),
+                    ...(past_ride_status_filter !== undefined && { past_ride_status_filter })
                 }, controller.signal);
 
                 if (response.data && Array.isArray(response.data)) {
                     const mappedRides = response.data.map(mapApiRideToRideHistoryItem);
-                    setRides(mappedRides);
+
+                    // On mobile, append to existing rides; on desktop, replace
+                    if (isMobile && currentPage > 0) {
+                        setRides(prev => [...prev, ...mappedRides]);
+                    } else {
+                        setRides(mappedRides);
+                    }
+
+                    // Check if there are more items to load
+                    setHasMore(mappedRides.length === ITEMS_PER_PAGE);
+                }
+
+                // Update history size if available
+                if (response.history_size !== undefined) {
+                    setHistorySize(response.history_size);
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
@@ -100,6 +177,7 @@ export function useHistory(errorMessage: string) {
             } finally {
                 if (!controller.signal.aborted) {
                     setIsLoading(false);
+                    setIsLoadingMore(false);
                 }
             }
         };
@@ -109,15 +187,36 @@ export function useHistory(errorMessage: string) {
         return () => {
             controller.abort();
         };
-    }, [isAuthenticated, errorMessage]);
+    }, [isAuthenticated, errorMessage, currentPage, rideType, activeTab]);
 
     // Handle card click
     const handleCardClick = (ride: RideHistoryItem) => {
-        if (ride.status === "Completed") {
+        if (ride.status === "Completed" || ride.status === "Scheduled") {
             setSelectedRide(ride);
             setDetailsOpen(true);
         }
     };
+
+    // Handle page change
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Load more for infinite scroll
+    const loadMore = useCallback(() => {
+        if (!isLoadingMore && hasMore && isMobile) {
+            setIsLoadingMore(true);
+            setCurrentPage(prev => prev + 1);
+        }
+    }, [isLoadingMore, hasMore, isMobile]);
+
+    // Reset when tab or ride type changes
+    useEffect(() => {
+        setRides([]);
+        setCurrentPage(0);
+        setHasMore(true);
+    }, [activeTab, rideType]);
 
     return {
         rides,
@@ -129,6 +228,13 @@ export function useHistory(errorMessage: string) {
         setDetailsOpen,
         filteredRides,
         handleCardClick,
-        TABS
+        TABS,
+        currentPage,
+        totalPages,
+        handlePageChange,
+        isMobile,
+        hasMore,
+        isLoadingMore,
+        loadMore
     };
 }

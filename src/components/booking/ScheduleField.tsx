@@ -156,7 +156,7 @@ const ScheduleField = memo(({ value, onChange, className, variant }: ScheduleFie
               selected={internalDate}
               onSelect={handleSelectDate}
               disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-              initialFocus
+              autoFocus
               className="p-2"
             />
           </div>

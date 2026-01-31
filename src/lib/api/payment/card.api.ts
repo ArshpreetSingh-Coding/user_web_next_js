@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/lib/api/endpoints";
+import apiClient from "../client";
 
 /**
  * Non-3D Secure: Add card using Stripe token
@@ -103,15 +104,14 @@ export async function confirmCard3D(
 }
 
 /**
- * Delete a saved card
+ * Delete a customer card (Stripe/Square)
  */
-export async function deleteCard(
-  cardId: string | number,
-  mode: string,
+export async function deleteCustomerCard(
+  cardId: string,
   sessionId: string,
   sessionIdentifier: string
 ): Promise<{ flag: number; message: string }> {
-  const response = await fetch(`${BASE_URL}/open/v1/delete_card`, {
+  const response = await fetch(`${BASE_URL}/open/v1/delete_customer_card`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -119,11 +119,29 @@ export async function deleteCard(
       "x-jugnoo-session-identifier": sessionIdentifier,
     },
     body: JSON.stringify({
-      id: cardId,
-      mode: mode,
+      is_delete: 1,
+      card_id: cardId,
+      payment_option: 9
     }),
   });
 
   const data = await response.json();
   return data;
+}
+
+/**
+ * Delete Stripe Card utilizing the apiClient
+ */
+export async function deleteStripeCard(cardId: string | number): Promise<{ flag: number; message: string }> {
+  try {
+    const response = await apiClient.post('/open/v1/delete_customer_card', {
+      is_delete: 1,
+      card_id: String(cardId),
+      payment_option: 9
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Delete Stripe card API error:', error);
+    throw error;
+  }
 }

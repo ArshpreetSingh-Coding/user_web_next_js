@@ -7,15 +7,17 @@ import { findAvailableDrivers, filterVehiclesByRideType } from "@/lib/ride-booki
 import type { VehicleRegion } from "@/types";
 import { useBookingStore } from "@/stores/booking.store";
 
-type FindDriversResult = {
-	vehicles: VehicleRegion[];
-	route: {
-		distance: number;
-		duration: number;
-		distanceText: string;
-		durationText: string;
-	};
-};
+// type FindDriversResult = {
+//   	regions: any;
+// 	vehicles: VehicleRegion[];
+// 	route: {
+// 		distance: number;
+// 		duration: number;
+// 		distanceText: string;
+// 		durationText: string;
+// 	};
+// };
+type FindDriversResult = any;
 
 /**
  * Encapsulates the full fare calculation + vehicle discovery flow.
@@ -55,7 +57,7 @@ export function useFindADrivers() {
 					longitude: pickup.lng,
 				});
 
-				const services = response.data?.services || [];
+				const services = (response.data?.services || []).filter((s: any) => s.type !== "rental" && s.type !== "car_rental");
 				if (services.length) {
 					setServiceData(services);
 
@@ -128,7 +130,7 @@ export function useFindADrivers() {
 			};
 
 			// Find drivers
-			const vehicles = await findAvailableDrivers(
+			const result = await findAvailableDrivers(
 				pickupLocation,
 				dropoffLocation,
 				distanceTimeResult,
@@ -139,20 +141,23 @@ export function useFindADrivers() {
 					timezoneOffset: pickupCityOffset || 330,
 				}
 			);
-
+			const vehicles = result?.regions;
+			console.log("FETCHED VEHICLES +++++++",vehicles)
 			// Filter by supported ride types (gracefully fallback to all)
 			const supportedRideTypes = (selectedService?.supported_ride_type || [])
 				.map((rt: number | string) => Number(rt))
 				.filter((rt: number) => !Number.isNaN(rt));
 
 			const filtered = filterVehiclesByRideType(vehicles, supportedRideTypes);
-
+			console.log("fine till here -->",filtered)
 			setAvailableVehicles(filtered);
-
+			console.log("Returning");
 			return {
 				vehicles: filtered,
 				route: routeData,
 			};
+		} catch(err){
+			console.log("ERROR IN CALCULTING FARE ", err);
 		} finally {
 			setIsFinding(false);
 			setIsLoading(false);

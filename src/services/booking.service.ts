@@ -1,7 +1,7 @@
 import apiClient from "@/lib/api/client";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import { mapsService } from "@/lib/google-maps/GoogleMapsService";
-import type { FindDriverResponse, InsertPickupScheduleResponse } from "@/types";
+import type { FindDriversResponse, InsertPickupScheduleResponse } from "@/types";
 
 export interface FetchConfigurationParams {
   latitude: number;
@@ -41,6 +41,12 @@ export const bookingService = {
         longitude: params.longitude,
       }
     );
+
+    if (response.data?.data?.services) {
+      response.data.data.services = response.data.data.services.filter(
+        (s: any) => s.type !== "rental" && s.type !== "car_rental"
+      );
+    }
     return response.data;
   },
 
@@ -64,8 +70,8 @@ export const bookingService = {
   /**
    * Find available drivers/vehicles for the given route
    */
-  async findDrivers(body: URLSearchParams, operatorToken: string): Promise<FindDriverResponse> {
-    const response = await apiClient.post<FindDriverResponse>(
+  async findDrivers(body: URLSearchParams, operatorToken: string): Promise<FindDriversResponse> {
+    const response = await apiClient.post<FindDriversResponse>(
       API_ENDPOINTS.PRODUCTION.AUTOS_BASE_URL + API_ENDPOINTS.VEHICLE.FIND_DRIVER,
       body,
       {

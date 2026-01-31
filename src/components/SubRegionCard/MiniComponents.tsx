@@ -21,9 +21,9 @@ function TitleBlock({ title, capacity, minutes }: TitleBlockProps) {
                     </div>
                 )}
             </div>
-            <h3 className="subtitle">
+            {/* <h3 className="subtitle">
                 {minutes ? minutes : '--'} min until arrival
-            </h3>
+            </h3> */}
         </div>
     );
 }

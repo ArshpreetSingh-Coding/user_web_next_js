@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { devtools, persist } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 import { User } from '@/types';
+import { useUIStore } from './ui.store';
 import {
   generateCustomerLoginOtp,
   verifyCustomerOtp,
@@ -18,11 +19,11 @@ import type {
 
 // Session validation cache to prevent excessive API calls
 let lastValidationTime = 0;
-const VALIDATION_CACHE_DURATION = 30000; // 30 seconds
+const VALIDATION_CACHE_DURATION = 5 * 60 * 1000; // 30 seconds
 
 interface AuthState {
   user: User | null;
-  token: string | null;
+  token: string | null; 
   phone_no?: string;
   sessionId: string | null; // Global session from runInitTasks - never cleared
   sessionIdentifier: string | null; // Global session from runInitTasks - never cleared
@@ -286,7 +287,11 @@ export const useAuthStore = create<AuthState>()(
               toast.error('Your session has expired. Please login again.');
               get().logout(); // Auto logout on session expiration
               if (typeof window !== 'undefined') {
-                window.location.href = '/en';
+                useUIStore.getState().openAuthModal('login');
+                const currentPath = window.location.pathname;
+                if (!currentPath.includes('/home') && !currentPath.includes('/book')) {
+                  window.location.href = '/en/home';
+                }
               }
               const errorMsg = response.message || response.error || 'Session expired. Please login again.';
               throw new Error(errorMsg);
@@ -332,7 +337,11 @@ export const useAuthStore = create<AuthState>()(
               toast.error('Your session has expired. Please login again.');
               get().logout();
               if (typeof window !== 'undefined') {
-                window.location.href = '/en';
+                useUIStore.getState().openAuthModal('login');
+                const currentPath = window.location.pathname;
+                if (!currentPath.includes('/home') && !currentPath.includes('/book')) {
+                  window.location.href = '/en/home';
+                }
               }
               return false;
             } else {
@@ -350,7 +359,11 @@ export const useAuthStore = create<AuthState>()(
               toast.error('Your session has expired. Please login again.');
               get().logout();
               if (typeof window !== 'undefined') {
-                window.location.href = '/en';
+                useUIStore.getState().openAuthModal('login');
+                const currentPath = window.location.pathname;
+                if (!currentPath.includes('/home') && !currentPath.includes('/book')) {
+                  window.location.href = '/en/home';
+                }
               }
               return false;
             }
@@ -365,6 +378,7 @@ export const useAuthStore = create<AuthState>()(
       }),
       {
         name: 'auth-storage',
+        storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           user: state.user,
           token: state.token,

@@ -13,6 +13,7 @@ import {
   UpdateProfileResponse,
   GetUserProfileResponse,
 } from '@/types';
+import { toast } from 'sonner';
 
 /**
  * Generate OTP for customer login
@@ -73,7 +74,7 @@ export const updateUserProfile = async (
 
   const { userSessionId, userSessionIdentifier } = useAuthStore.getState();
   if (!userSessionId || !userSessionIdentifier) {
-    throw new Error('User session not found. Please login first.');
+    toast.error('User session not found. Please login first.');
   }
   // const headers = {
   //   'x-jugnoo-session-id': userSessionId,

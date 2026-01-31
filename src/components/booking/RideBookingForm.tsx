@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronUp, ChevronDown } from "lucide-react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import PickupLocationField from "./PickupLocationField";
 import DestinationField from "./DestinationField";
@@ -15,6 +16,8 @@ import AddStopButton from "./AddStopButton";
 import StopItem from "./StopItem";
 import { useBookingForm } from "./useBookingForm";
 import { bookingValidator } from "@/lib/validators/bookingValidator";
+import IncrementDecrement from "@/components/IncrementDecrement";
+import {PhoneInput} from "@/components/auth/phoneInput";
 
 import { useBookingStore } from "@/stores/booking.store";
 import { useUIStore } from "@/stores/ui.store";
@@ -22,11 +25,33 @@ import { useFindADrivers } from "@/hooks/useFindADrivers";
 
 const RideBookingForm = ({ className, variant }: { className?: string; variant?: "outline" | "filled" }) => {
   const [mounted, setMounted] = useState(false);
+  const [isBookForOtherOpen, setIsBookForOtherOpen] = useState(false);
+  const [showOtherOptions, setShowOtherOptions] = useState(false);
   const router = useRouter();
   const params = useParams() as { locale?: string };
   const pathname = usePathname() || "";
 
-  const { setSelectedRegion, setSelectedServices, setAvailableVehicles } = useBookingStore();
+  const {
+    setSelectedRegion,
+    setSelectedServices,
+    selectedServices,
+    setAvailableVehicles,
+    selectedService,
+    selectedRegion,
+    setCurrentStepIndex,
+    luggageCount,
+    setLuggageCount,
+    driverNote,
+    setDriverNote,
+    flightNumber,
+    setFlightNumber,
+    customerName,
+    setCustomerName,
+    customerPhone,
+    setCustomerPhone,
+    customerCountryCode,
+    setCustomerCountryCode,
+  } = useBookingStore();
   const { showToast } = useUIStore();
   const { isFinding, calculateFareAndFindDrivers } = useFindADrivers();
 
@@ -52,27 +77,27 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
     setSelectedRegion(null);
     setSelectedServices([]);
     setAvailableVehicles([]);
-
+    console.log("validation data:::::::::::",pickup, destination, stops, scheduledDateTime);
     const validation = bookingValidator.validateBookingForm({
       pickup,
       destination,
       stops,
       scheduledDateTime,
     });
-
+    console.log("validation:::::", validation);
     if (!validation.isValid) {
       toast.error(validation.error);
       return;
     }
-
+    console.log("redirecting to the book page");
     try {
-      const result = await calculateFareAndFindDrivers();
-      console.log("🚙 Vehicles ready:", result.vehicles.length);
+      const data = await calculateFareAndFindDrivers();
+      // console.log("🚙 Vehicles ready:", data?.regions.vehicles.length);
 
       const locale = params?.locale || "en";
       router.push(`/${locale}/book`);
     } catch (err) {
-      console.error("❌ Error in handleBookNow:", err);
+      // console.error("❌ Error in handleBookNow:", err);
       showToast("Failed to get quotes. Please try again.", "error");
     }
   }, [
@@ -92,6 +117,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
     setSelectedRegion(null);
     setSelectedServices([]);
     setAvailableVehicles([]);
+    setCurrentStepIndex(0);
 
     const validation = bookingValidator.validateBookingForm({
       pickup,
@@ -107,11 +133,12 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
 
     try {
       const result = await calculateFareAndFindDrivers();
+      console.log("+++++++++", result);
       toast.success(
         `Found ${result.vehicles.length} vehicles. Route: ${result.route.distanceText}, ${result.route.durationText}`
       );
     } catch (err) {
-      console.error("❌ Error calculating fare:", err);
+      // console.error("❌ Error calculating fare:", err);
       toast.error("Failed to calculate fare. Please try again.");
     }
   }, [
@@ -122,13 +149,25 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
     setSelectedRegion,
     setSelectedServices,
     stops,
+    setCurrentStepIndex,
   ]);
 
-  const handleSubmit = pathname.includes("/book") ? handleCalculateFare : handleBookNow;
+  // Auto-calculate fare when service changes and we are on the book page
+  useEffect(() => {
+    if (pathname.includes("/book") && selectedService && pickup?.address && destination?.address) {
+      handleCalculateFare();
+    }
+  }, [selectedService, pickup?.address, destination?.address, handleCalculateFare, pathname]);
 
+  const isBookPage = pathname.includes("/book");
+  console.log("is book page::", isBookPage);
+  const handleSubmit = isBookPage ? handleCalculateFare : handleBookNow;
+  const showAdditionalOptions = showOtherOptions;
+  
+  // console.log("selectedService", selectedService?.type)
   return (
     <div
-      className={`w-full max-w-[420px] p-4 lg:p-6 bg-primary rounded-lg lg:rounded-xl flex flex-col lg:max-h-125 ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
+      className={`w-full max-w-105 p-4 lg:p-6 bg-primary rounded-lg lg:rounded-xl flex flex-col ${!isBookPage ? "lg:max-h-125" : ""} ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
     >
       <h2
         className={`text-base lg:text-xl font-semibold text-white mb-3 lg:mb-5 shrink-0 ${variant === "outline" ? "text-black!" : ""}`}
@@ -136,7 +175,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
         Where do you want to Go?
       </h2>
 
-      <div className="flex flex-col flex-1 overflow-y-auto lg:pr-3 space-y-1 lg:space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-white/30">
+      <div className={`flex flex-col flex-1 ${!isBookPage ? "overflow-y-auto" : ""} lg:pr-3 space-y-1 lg:space-y-2 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-white/30`}>
         <PickupLocationField value={pickup} onChange={setPickup} variant={variant} />
 
         {mounted && (
@@ -161,6 +200,107 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
         <ScheduleField value={scheduledDateTime} onChange={setScheduledDateTime} variant={variant} />
 
         <ServiceSelector variant={variant} />
+
+        {/* Other Options Toggle Button */}
+        {isBookPage && (
+          <Button
+            type="button"
+            onClick={() => setShowOtherOptions(!showOtherOptions)}
+            variant="ghost"
+            className={`w-full justify-between h-auto p-3 ${variant === "outline" ? "text-gray-700 hover:bg-gray-50" : "text-white hover:bg-white/10"}`}
+          >
+            <span className="font-medium">Other Options</span>
+            {showOtherOptions ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+        )}
+
+        {/* Additional Options - shown when Other Options is toggled */}
+        {showAdditionalOptions && (
+          <div className="space-y-3 pt-2">
+            {/* Luggage */}
+            <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+              <div className="flex justify-between items-center">
+                <h3 className={`text-sm font-semibold ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
+                  Add Luggage
+                </h3>
+                <IncrementDecrement
+                  value={luggageCount}
+                  onIncrement={() => setLuggageCount(luggageCount + 1)}
+                  onDecrement={() => setLuggageCount(Math.max(0, luggageCount - 1))}
+                />
+              </div>
+            </Card>
+
+            {/* Driver Note */}
+            <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+              <label className={`text-sm font-semibold mb-2 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
+                Note For Driver
+              </label>
+              <textarea
+                value={driverNote}
+                onChange={(e) => setDriverNote(e.target.value)}
+                placeholder="Write here..."
+                maxLength={500}
+                rows={3}
+                className={`w-full p-2 border rounded-lg resize-none focus:outline-none focus:ring ${
+                  variant === "outline" 
+                    ? "border-gray-300 bg-white text-gray-900 focus:ring-primary/20" 
+                    : "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:ring-white/20"
+                }`}
+              />
+            </Card>
+
+            {/* Additional Services */}
+            {isBookPage && selectedRegion && (
+              <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+                <label className={`text-sm font-semibold mb-2 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
+                  Additional Services
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {selectedRegion.vehicle_services && selectedRegion.vehicle_services.length > 0 ? (
+                    selectedRegion.vehicle_services.map((svc: any) => (
+                      <label
+                        key={svc.id}
+                        className={`inline-flex items-center gap-2 px-3 py-2 border rounded-lg cursor-pointer transition-colors ${
+                          variant === "outline"
+                            ? "border-gray-200 hover:bg-gray-50"
+                            : "border-white/30 hover:bg-white/5"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedServices.includes(svc.id)}
+                          onChange={() => {
+                            const updatedServices = selectedServices.includes(svc.id)
+                              ? selectedServices.filter((id) => id !== svc.id)
+                              : [...selectedServices, svc.id];
+                            setSelectedServices(updatedServices);
+                          }}
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                        />
+                        <span className={`text-sm font-medium whitespace-nowrap ${
+                          variant === "outline" ? "text-gray-900" : "text-white"
+                        }`}>
+                          {svc.name}
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <p className={`text-sm ${
+                      variant === "outline" ? "text-gray-500" : "text-white/60"
+                    }`}>
+                      No additional services available
+                    </p>
+                  )}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
 
       <motion.div
@@ -170,11 +310,11 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
       >
         <Button
           onClick={handleSubmit}
-          disabled={isFinding}
+          disabled={isFinding || !pickup?.address || !destination?.address}
           variant="outline"
           className={`w-full h-10 lg:h-11 bg-white text-primary hover:bg-white hover:scale-102 hover:text-primary font-semibold text-sm lg:text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ${variant === "outline" ? "bg-primary text-white! hover:text-primary!" : ""}`}
         >
-          {isFinding ? "Loading..." : pathname.includes("/book") ? "Calculate Fare" : "Book Now"}
+          {isFinding ? "Loading..." : isBookPage ? "Calculate Fare" : "Book Now"}
           <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </motion.div>

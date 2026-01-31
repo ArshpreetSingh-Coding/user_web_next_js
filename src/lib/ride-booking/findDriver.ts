@@ -11,12 +11,14 @@ import type {
   FindDriverOptions,
   InsertPickupScheduleRequest,
   InsertPickupScheduleResponse,
+  FindDriversResponse,
 } from '@/types';
 import {
   formatDateTime,
   getCookieValue,
   buildInsertPickupScheduleBody,
 } from '@/lib/utils/helpers';
+import { toast } from 'sonner';
 
 // ======================== API FUNCTIONS ========================
 
@@ -28,7 +30,7 @@ export const findAvailableDrivers = async (
   dropoff: BookingLocation,
   distanceTime: DistanceTimeResult,
   options: FindDriverOptions = {}
-): Promise<VehicleRegion[]> => {
+): Promise<FindDriversResponse> => {
   // Validate locations
   if (!pickup.latitude || !pickup.longitude) {
     throw new Error('Invalid pickup location');
@@ -72,15 +74,15 @@ export const findAvailableDrivers = async (
     console.log('🚗 Finding drivers (form)...', Object.fromEntries(body.entries()));
 
     const data = await bookingService.findDrivers(body, operatorToken);
-    console.log('🚗 Find drivers response:', data);
+    console.log('🚗 Find drivers response:', data );
     // Check for success (flag 175)
     if (data.flag === 175) {
-      console.log('✅ Drivers found:', data.regions?.length || 0);
-      return data.regions || [];
+      console.log('✅ Drivers found:', data?.regions || 0);
+      return data;
     } else {
-      throw new Error(data.error || data.message || 'Failed to find drivers');
+      throw new Error('Failed to find drivers');
     }
-  } catch (error: any) {
+  } catch (error: any) {  
     console.error('❌ Find driver error:', error);
     throw new Error(error.message || 'Failed to find available vehicles');
   }
@@ -139,7 +141,7 @@ export type {
   VehicleService,
   RegionFare,
   FindDriverRequest,
-  FindDriverResponse,
+  FindDriversResponse,
   FindDriverOptions,
 } from '@/types';
 

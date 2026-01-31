@@ -21,7 +21,7 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
     const [amount, setAmount] = useState("");
     const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
     const { balance, currency, transactions,  isLoading, refetch } = useWallet();
-    console.log('💰 Wallet Data in Dialog:', { balance, currency, transactions, isLoading })        ;
+    // console.log('💰 Wallet Data in Dialog:', { balance, currency, transactions, isLoading })        ;
     useEffect(() => {
         if (open) {
             refetch();
@@ -88,7 +88,8 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
                                         // You can add toast notification here if needed
                                         return;
                                     }
-                                    setIsRechargeModalOpen(true);
+                                    onOpenChange(false); // close wallet dialog
+                                    setTimeout(() => setIsRechargeModalOpen(true), 50);
                                 }}
                             >
                                 {t("Recharge")}

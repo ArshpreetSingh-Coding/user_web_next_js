@@ -4,27 +4,41 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import RideBookingForm from "@/components/booking/RideBookingForm";
 import ActionButton from "@/components/shared/ActionButton";
 import HeaderActions from "@/components/shared/HeaderActions";
-import { CheckBox, SubRegionCard } from "@/components/SubRegionCard";
+import { SubRegionCard } from "@/components/SubRegionCard";
 import {
   TitleBlock,
   DescriptionBlock,
   PriceBlock,
 } from "@/components/SubRegionCard";
-import { SelectedItems } from "@/components/SubRegionCard/SelectedItems";
 import { Card } from "@/components/ui/card";
 import { useBookingStore } from "@/stores/booking.store";
 import { useAuthStore } from "@/stores/auth.store";
+import { useUIStore } from "@/stores/ui.store";
 import Stepper from "@/components/Stepper";
 import CouponPaymentCard from "@/components/CouponPaymentCard";
-import IncrementDecrement from "@/components/IncrementDecrement";
 import { useRouter, useParams } from "next/navigation";
-import type { VehicleRegion } from "@/types";
 import { getCouponsPromos, type Coupon } from "@/lib/api/coupons";
 import { toast } from 'sonner';
+import { Skeleton } from "@/components/ui/skeleton";
+import { PhoneInput } from "@/components/auth/phoneInput";
+
+const VehicleCardSkeleton = () => (
+  <div className="flex items-center gap-4 rounded-lg bg-white p-3 ring-1 ring-border shadow-sm h-25">
+    <Skeleton className="w-20 h-20 rounded-lg shrink-0 bg-gray-100!" />
+    <div className="flex-1 space-y-1">
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-4 w-32 bg-gray-100!" />
+        <Skeleton className="h-4 w-16 bg-gray-100!" />
+      </div>
+      <Skeleton className="h-3 w-full bg-gray-100!" />
+      <Skeleton className="h-3 w-2/3 bg-gray-100!" />
+    </div>
+  </div>
+);
 
 const steps = [
+  { label: "Enter Details" },
   { label: "Select Car Type" },
-  { label: "Choose Service" },
   { label: "Payment" },
 ];
 
@@ -39,17 +53,23 @@ export default function BookingPage() {
     setSelectedRegion,
     currentStepIndex,
     setCurrentStepIndex,
-    selectedServices,
-    setSelectedServices,
     appliedCoupon,
     setAppliedCoupon,
-    passengerCount,
-    setPassengerCount,
-    luggageCount,
-    setLuggageCount,
-    driverNote,
-    setDriverNote,
+    selectedServices,
+    setSelectedServices,
+    isLoading,
+    selectedService,
+    flightNumber,
+    setFlightNumber,
+    customerName,
+    setCustomerName,
+    customerPhone,
+    setCustomerPhone,
+    customerCountryCode,
+    setCustomerCountryCode,
   } = useBookingStore();
+  const { isAuthenticated } = useAuthStore();
+  const { openAuthModal } = useUIStore();
 
   // Use available vehicles from store - no fallbacks
   const regions = availableVehicles;
@@ -59,48 +79,47 @@ export default function BookingPage() {
   const [isMobileFormActive, setIsMobileFormActive] = useState(true);
 
   // Fetch coupons on mount
-  useEffect(() => {
-    const fetchCoupons = async () => {
-      setIsLoadingCoupons(true);
-      try {
-        const fetchedCoupons = await getCouponsPromos();
-        setCoupons(fetchedCoupons);
-      } catch (error) {
-        console.log('Error fetching coupons:', error);
-        setCoupons([]);
-      } finally {
-        setIsLoadingCoupons(false);
-      }
-    };
-    fetchCoupons();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCoupons = async () => {
+  //     setIsLoadingCoupons(true);
+  //     try {
+  //       const fetchedCoupons = await getCouponsPromos();
+  //       setCoupons(fetchedCoupons);
+  //     } catch (error) {
+  //       console.log('Error fetching coupons:', error);
+  //       setCoupons([]);
+  //     } finally {
+  //       setIsLoadingCoupons(false);
+  //     }
+  //   };
+  //   fetchCoupons();
+  // }, []);
 
-  const selectedAdditionalServices = useMemo(() => {
-    return vehicleServices
-      .filter((svc) => selectedServices.includes(svc.id))
-      .map((svc) => ({ id: svc.id, name: svc.name, price: svc.price }));
-  }, [selectedServices, vehicleServices]);
+  // Auto-advance from step 0 to step 1 when vehicles are available
+  useEffect(() => {
+    if (currentStepIndex === 0 && availableVehicles.length > 0) {
+      setCurrentStepIndex(1);
+    }
+  }, [availableVehicles, currentStepIndex, setCurrentStepIndex]);
 
   const subProgress = useMemo(() => {
-    if (currentStepIndex === 0) {
-      // Step 1: Show progress when vehicle is selected
-      return selectedRegion ? 150 : 0;
-    }
     if (currentStepIndex === 1) {
-      // Step 2: Calculate progress based on optional selections
-      return 90;
+      // Step 1: Show progress when vehicle is selected
+      return selectedRegion ? 450 : 150;
     }
     return 0;
-  }, [currentStepIndex, selectedRegion, selectedServices, appliedCoupon, luggageCount, driverNote]);
-  console.log('SubProgress:', subProgress);
-  
+  }, [currentStepIndex, selectedRegion]);
+  // console.log('SubProgress:', subProgress);
+
   // Target view for the right panel list
-  const targetView = useMemo<"regions" | "services">(() => {
-    return currentStepIndex === 0 ? "regions" : "services";
+  const targetView = useMemo<"regions" | "coupons">(() => {
+    if (currentStepIndex === 1) return "regions";
+    if (currentStepIndex === 2) return "coupons";
+    return "regions"; // default for step 0
   }, [currentStepIndex]);
 
   // Simple fade swap (opacity only)
-  const [renderView, setRenderView] = useState<"regions" | "services">(
+  const [renderView, setRenderView] = useState<"regions" | "coupons">(
     targetView
   );
   const [visible, setVisible] = useState(true);
@@ -130,9 +149,16 @@ export default function BookingPage() {
         eta: svc.eta ?? 0,
         description: svc.description ?? '',
       }));
-      console.log('SelectedRegion:', selectedRegion);
       setVehicleServices(servicesWithEta);
       setSelectedServices([]);
+      
+      // Scroll to services section after brief delay
+      setTimeout(() => {
+        const servicesSection = document.getElementById('vehicle-services-section');
+        if (servicesSection) {
+          servicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
   };
 
@@ -152,67 +178,68 @@ export default function BookingPage() {
     setAppliedCoupon(couponId);
   }
 
-
-
-  const { isAuthenticated } = useAuthStore();
-
   const handleStepChange = useCallback((nextStep: number) => {
-    if (nextStep >= 1 && !selectedRegion) {
-      return;
-    }
-
     // Prevent unauthenticated users from proceeding past step 0
-    if (nextStep > 0 && !isAuthenticated) {
-      toast.error('Please login to continue');
+    // if (nextStep > 1 && !isAuthenticated) {
+    //   openAuthModal();
+    //   return;
+    // }
+
+    if (nextStep >= 1 && !selectedRegion) {
+      toast.error('Please select a vehicle first');
       return;
     }
 
-    if (nextStep === 2) {
+    if (nextStep === 1) {
       router.push(`/${locale}/ride-summary`);
       return;
     }
 
     setCurrentStepIndex(nextStep);
-  }, [selectedRegion, locale, router, setCurrentStepIndex, isAuthenticated]);
+  }, [selectedRegion, locale, router, setCurrentStepIndex, isAuthenticated, openAuthModal]);
 
   const onBack = useCallback(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 768 && currentStepIndex === 0 && !isMobileFormActive) {
+    if (typeof window !== "undefined" && window.innerWidth < 768 && currentStepIndex <= 1 && !isMobileFormActive) {
       setIsMobileFormActive(true);
       return;
     }
 
-    if (currentStepIndex === 0) {
+    if (currentStepIndex === 1 || currentStepIndex === 0) {
       router.push(`/${locale}/home`);
       return;
     }
 
-    if (currentStepIndex > 0) {
+    if (currentStepIndex > 1) {
       setCurrentStepIndex(currentStepIndex - 1);
     }
   }, [currentStepIndex, setCurrentStepIndex, isMobileFormActive, locale, router]);
-  
+
   const onNext = useCallback(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 768 && currentStepIndex === 0 && isMobileFormActive) {
+    if (typeof window !== "undefined" && window.innerWidth < 768 && currentStepIndex <= 1 && isMobileFormActive) {
       setIsMobileFormActive(false);
       return;
     }
 
-    if (currentStepIndex === 0) {
-      // Check authentication before proceeding to step 1
-      if (!isAuthenticated) {
-        toast.error('Please login to continue');
-        return;
-      }
-
+    // Step 1: Select Car Type -> Step 2: Payment (ride-summary)
+    if (currentStepIndex === 1) {
       if (!selectedRegion) {
         toast.error('Please select a vehicle to proceed');
         return;
       }
-      setCurrentStepIndex(1);
-    } else if (currentStepIndex === 1) {
+      
+      // Validate flight number for airport rides
+      if (selectedService?.type === "airport_taxi" && !flightNumber.trim()) {
+        toast.error('Flight number is required for airport rides');
+        return;
+      }
+      
+      if (!isAuthenticated) {
+        openAuthModal();
+        return;
+      }
       router.push(`/${locale}/ride-summary`);
     }
-  }, [currentStepIndex, selectedRegion, locale, router, setCurrentStepIndex, isMobileFormActive, isAuthenticated]);
+  }, [currentStepIndex, selectedRegion, locale, router, isMobileFormActive, isAuthenticated, selectedService, flightNumber]);
 
   return (
     <section className="relative min-h-[calc(100vh-88px)] pb-20 w-full bg-[#f8f8f8]">
@@ -220,9 +247,9 @@ export default function BookingPage() {
         <HeaderActions onBack={onBack} onNext={onNext} />
 
         <div className="w-full grid grid-cols-1 lg:grid-cols-[420px_minmax(0,1fr)] md:grid-cols-[280px_minmax(0,1fr)] gap-6 lg:gap-8 xl:gap-10 items-start">
-          <div className={`${isMobileFormActive && currentStepIndex === 0 ? "block" : "hidden"} md:block w-full lg:min-w-105 lg:max-w-110 md:max-w-70 lg:sticky lg:top-6 space-y-4`}>
+          <div className={`${isMobileFormActive && currentStepIndex <= 1 ? "block" : "hidden"} md:block w-full lg:min-w-105 lg:max-w-110 md:max-w-70 lg:sticky lg:top-6 space-y-4`}>
             <RideBookingForm className="mx-0! min-w-full" variant="outline" />
-            {selectedRegion && <h2 className="H1">Selected Items</h2>}
+            {/* {selectedRegion && <h2 className="H1">Selected Items</h2>}
 
             {selectedRegion && (
               <SelectedItems
@@ -232,7 +259,6 @@ export default function BookingPage() {
                   <TitleBlock
                     title={selectedRegion.region_name}
                     capacity={selectedRegion.max_people}
-                    minutes={selectedRegion.eta || undefined}
                   />
                 }
                 priceComponent={
@@ -248,13 +274,13 @@ export default function BookingPage() {
                   />
                 }
               />
-            )}
+            )} */}
           </div>
 
-          <div className={`w-full ${isMobileFormActive && currentStepIndex === 0 ? "hidden md:block" : "block"}`}>
+          <div className={`w-full ${isMobileFormActive && currentStepIndex <= 1 ? "hidden md:block" : "block"}`}>
             <Card className="items-center mb-6 max-sm:-px-1">
               <Stepper
-                steps={steps}
+                steps={steps} 
                 currentStep={currentStepIndex}
                 subProgress={subProgress}
                 onStepChange={handleStepChange}
@@ -264,20 +290,10 @@ export default function BookingPage() {
             <Card className="px-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
               <div className="flex justify-between items-center">
                 <h2 className="H2">
-                  {targetView === "regions"
-                    ? "Choose a ride"
-                    : "Choose a service"}
+                  {currentStepIndex === 0 ? "Complete the form to continue" :
+                   currentStepIndex === 1 ? "Choose a ride" :
+                   "Coupons & Promotions"}
                 </h2>
-                {currentStepIndex === 0 && (
-                  <IncrementDecrement
-                    title="Passengers"
-                    value={passengerCount}
-                    onIncrement={() => setPassengerCount(passengerCount + 1)}
-                    onDecrement={() =>
-                      setPassengerCount(Math.max(1, passengerCount - 1))
-                    }
-                  />
-                )}
               </div>
 
               <div
@@ -287,7 +303,17 @@ export default function BookingPage() {
                   }`}
               >
                 {currentStepIndex === 0 ? (
-                  regions.length > 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <p className="text-muted-foreground">Fill in your pickup and destination details on the left to get started</p>
+                  </div>
+                ) : currentStepIndex === 1 ? (
+                  isLoading ? (
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <VehicleCardSkeleton key={i} />
+                      ))}
+                    </div>
+                  ) : regions.length > 0 ? (
                     regions.map((region) => (
                       <SubRegionCard
                         key={region.region_id}
@@ -299,7 +325,6 @@ export default function BookingPage() {
                           <TitleBlock
                             title={region.region_name}
                             capacity={region.max_people}
-                            minutes={region.eta || undefined}
                           />
                         }
                         subComponent2={
@@ -337,67 +362,8 @@ export default function BookingPage() {
                     </div>
                   )
                 ) : (
+                  // Show coupons on step 1
                   <>
-                    {!selectedRegion ? (
-                      <div className="text-sm text-muted-foreground py-4">
-                        Please select a ride first.
-                      </div>
-                    ) : (
-                      <div
-                        className={`overflow-y-auto max-h-90 space-y-3
-                          [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-1
-                          transition-opacity duration-200 ease-in-out will-change-[opacity] max-sm:max-h-full ${visible ? "opacity-100" : "opacity-0"
-                          }`}
-                      >
-                        {vehicleServices.length > 0 ? (
-                          vehicleServices.map((svc) => (
-                            <SubRegionCard
-                              key={svc.id}
-                              imgSrc="/default.png"
-                              onClick={() => toggleService(svc.id)}
-                              className="max-h-22"
-                              subComponent1={
-                                <TitleBlock title={svc.name} minutes={svc.eta} />
-                              }
-                              subComponent2={
-                                <CheckBox
-                                  checked={selectedServices.includes(svc.id)}
-                                  onCheckedChange={() => toggleService(svc.id)}
-                                />
-                              }
-                              subComponent3={
-                                <DescriptionBlock text={svc.description} />
-                              }
-                              subComponent4={
-                                <PriceBlock price={svc.price} currencySymbol={selectedRegion.region_fare?.currency_symbol || "₹"} />
-                              }
-                            />
-                          ))
-                        ) : (
-                          <Card>
-                            <div className="text-center py-2 text-muted-foreground">
-                              <p>No additional services available for this vehicle</p>
-                            </div>
-                          </Card>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </Card>
-
-            {currentStepIndex === 1 && (
-              <>
-                <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
-                  <h2 className="H2">Coupons & Promotions</h2>
-
-                  <div
-                    className={`overflow-y-auto max-h-90 space-y-3
-                  [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-1
-                  transition-opacity duration-200 ease-in-out will-change-[opacity] max-sm:max-h-full ${visible ? "opacity-100" : "opacity-0"
-                      }`}
-                  >
                     {isLoadingCoupons ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <p>Loading coupons...</p>
@@ -414,46 +380,97 @@ export default function BookingPage() {
                         />
                       ))
                     ) : (
-                      <Card>
-                        <div className="text-center py-4 text-muted-foreground">
-                          <p>No coupons available at the moment</p>
-                        </div>
-                      </Card>
+                      <div className="text-center py-8 text-muted-foreground border border-border rounded-lg">
+                        <p>No coupons available at the moment</p>
+                      </div>
                     )}
-                  </div>
-                </Card>
+                  </>
+                )}
+              </div>
+            </Card>
 
-                <Card className="px-6 mt-6 max-sm:px-2">
-                  <div className="flex justify-between items-center">
-                    <h2 className="H2 max-sm:text-lg!">Add Luggage</h2>
-                    <IncrementDecrement
-                      value={luggageCount}
-                      onIncrement={() => setLuggageCount(luggageCount + 1)}
-                      onDecrement={() =>
-                        setLuggageCount(Math.max(0, luggageCount - 1))
-                      }
-                    />
+            {/* Booking Details - shown on step 1 after vehicle selection */}
+            {currentStepIndex === 1 && selectedRegion && (
+              <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
+                <h2 className="H2 mb-3">Booking Details</h2>
+                <div className="space-y-4">
+                  {/* Book for someone else */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
+                    <div className="space-y-2 sm:flex sm:gap-12.5">
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Passenger name"
+                        className="w-[40%] p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      <div className="w-[55%]">
+                        <PhoneInput
+                          phoneNumber={customerPhone}
+                          countryCode={customerCountryCode || 'US'}
+                          onPhoneNumberChange={setCustomerPhone}
+                          onCountryCodeChange={setCustomerCountryCode}
+                          placeholder="Passenger phone number"  
+                        />
+                      </div>
+                    </div>
                   </div>
-                </Card>
 
-                <Card className="px-6 mt-6 max-sm:px-2">
-                  <div className="flex justify-between items-center">
-                    <h2 className="H2 max-sm:text-lg! max-sm:-mb-2">Note For Driver</h2>
-                  </div>
-                  <textarea
-                    value={driverNote}
-                    onChange={(e) => setDriverNote(e.target.value)}
-                    placeholder="Write here"
-                    className="w-full p-3 border border-border rounded-lg resize-none focus:outline-none focus:ring focus:ring-border max-sm:h-24"
-                    rows={5}
-                    maxLength={500}
-                  />
-                </Card>
-              </>
+                  {/* Flight Number - only for airport taxi */}
+                  {selectedService?.type === "airport_taxi" && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-900 flex items-center gap-1">
+                        Flight Number
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={flightNumber}
+                        onChange={(e) => setFlightNumber(e.target.value)}
+                        placeholder="e.g., AA123"
+                        maxLength={20}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            {/* Vehicle Services Section - shown on step 1 after vehicle selection */}
+            {currentStepIndex === 1 && selectedRegion && isAuthenticated && false && (
+              <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1" id="vehicle-services-section">
+                <h2 className="H2 mb-3">Additional Services</h2>
+                <div className="flex flex-wrap gap-2 p-1">
+                  {vehicleServices.length > 0 ? (
+                    vehicleServices.map((svc) => (
+                      <label
+                        key={svc.id}
+                        className="inline-flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedServices.includes(svc.id)}
+                          onChange={() => toggleService(svc.id)}
+                          className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                        />
+                        <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
+                          {svc.name}
+                        </span>
+                      </label>
+                    ))
+                  ) : (
+                    <div className="text-center py-2 text-muted-foreground border-none w-full">
+                      <p>No additional services available for this vehicle</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
             )}
 
 
-            {(currentStepIndex >= 1 && selectedRegion) && (
+            {/* {(currentStepIndex >= 1 && selectedRegion) && (
               <div className="md:hidden">
                 {selectedRegion && <h2 className="H1 my-4 max-sm:text-xl!">Selected Items</h2>}
                 <SelectedItems
@@ -463,7 +480,6 @@ export default function BookingPage() {
                     <TitleBlock
                       title={selectedRegion.region_name}
                       capacity={selectedRegion.max_people}
-                      minutes={selectedRegion.eta || undefined}
                     />
                   }
                   priceComponent={
@@ -480,7 +496,7 @@ export default function BookingPage() {
                   }
                 />
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

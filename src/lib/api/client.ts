@@ -3,6 +3,7 @@ import { storage } from '@/lib/utils/storage';
 import { STORAGE_KEYS, API_TIMEOUT } from '@/lib/utils/constants';
 import { useAuthStore } from '@/stores/auth.store';
 import { BASE_URL } from '@/lib/api/endpoints';
+import { useUIStore } from '@/stores/ui.store';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -11,6 +12,23 @@ const apiClient: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+const handleSessionExpired = () => {
+  storage.remove(STORAGE_KEYS.AUTH_TOKEN);
+  storage.remove(STORAGE_KEYS.USER_DATA);
+  useAuthStore.getState().logout();
+
+  if (typeof window !== 'undefined') {
+    // Open login modal instead of redirecting
+    useUIStore.getState().openAuthModal('login');
+    
+    // Only redirect if not already on home page
+    const currentPath = window.location.pathname;
+    if (!currentPath.includes('/home') && !currentPath.includes('/book')) {
+      window.location.href = '/en/home';
+    }
+  }
+};
 
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -45,9 +63,9 @@ apiClient.interceptors.request.use(
       '/open/v1/update_user_profile',
       '/open/v1/insert_pickup_schedule',
       '/open/v1/add_sqaure_card',
-      '/open/v1/fetch_wallet_balance',
+      '/open/v1/fetch_wallet_balance',  
     ];
-
+    console.log("Hello")
     const isSystemEndpoint = systemEndpoints.some(endpoint => config.url?.includes(endpoint));
     const isUserEndpoint = userEndpoints.some(endpoint => config.url?.includes(endpoint));
 
@@ -57,7 +75,7 @@ apiClient.interceptors.request.use(
     // For user-specific endpoints, enforce user session requirement
     if (isUserEndpoint) {
       if (!userSessionId || !userSessionIdentifier) {
-        console.error('❌ User session required for:', config.url);
+        // console.error('❌ User session required for:', config.url);
         useAuthStore.getState().logout();
         if (typeof window !== 'undefined') {
           window.location.href = '/en/home';

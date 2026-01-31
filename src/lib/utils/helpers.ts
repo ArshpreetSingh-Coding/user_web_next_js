@@ -88,5 +88,17 @@ export function buildInsertPickupScheduleBody(req: InsertPickupScheduleRequest):
 
 	body.set('preferred_payment_mode', String(req.preferredPaymentMode ?? 1));
 
+	if (req.flightNumber) {
+		body.set('flight_number', req.flightNumber);
+	}
+
+	if (req.customerName) {
+		body.set('customer_name', req.customerName);
+	}
+
+	if (req.customerPhoneNo) {
+		body.set('customer_phone_no', req.customerPhoneNo);
+	}
+
 	return body;
 }

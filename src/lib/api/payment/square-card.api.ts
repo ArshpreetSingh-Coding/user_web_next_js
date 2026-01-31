@@ -5,11 +5,11 @@
 
 
 
-import apiClient  from '../client';
+import apiClient from '../client';
 
 export interface SquareCardData {
   id?: string;
-  card_id?: string;
+  card_id?: string | number;
   last_4?: string;
   card_brand?: string;
   exp_month?: number;
@@ -19,7 +19,7 @@ export interface SquareCardData {
 
 export interface AddSquareCardRequest {
   square_token: string;
-  card_id?: string;
+  card_id?: string | number;
   last_4?: string;
   card_brand?: string;
   exp_month?: number;
@@ -30,7 +30,7 @@ export interface SquareCardResponse {
   flag: number;
   message: string;
   data?: {
-    card_id?: string;
+    card_id?: string | number;
     cards?: SquareCardData[];
   };
 }

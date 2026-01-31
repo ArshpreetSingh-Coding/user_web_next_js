@@ -13,6 +13,8 @@ interface AddCardModalProps {
   stripePublishableKey: string;
 }
 
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
 /**
  * AddCardModal Component
  * Handles Stripe 3D Secure card addition flow:
@@ -28,7 +30,7 @@ export function AddCardModal({
   onCardAdded,
   stripePublishableKey
 }: AddCardModalProps) {
-  const { sessionId, sessionIdentifier } = useAuthStore();
+  const { userSessionId, userSessionIdentifier } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [stripeLoaded, setStripeLoaded] = useState(false);
   const [elementsReady, setElementsReady] = useState(false);
@@ -94,7 +96,7 @@ export function AddCardModal({
 
     const timer = setTimeout(() => {
       initializeStripe();
-    }, 50);
+    }, 200); // Increased timeout to ensure Dialog DOM is fully ready
 
     return () => clearTimeout(timer);
   }, [isOpen, stripeLoaded]);
@@ -104,12 +106,13 @@ export function AddCardModal({
    */
   const initializeStripe = () => {
     if (!window.Stripe || !stripePublishableKey) {
-      toast.error("Stripe configuration missing");
+      // toast.error("Stripe configuration missing");
       return;
     }
 
-    if (cardNumberRef.current || cardExpiryRef.current || cardCvcRef.current) {
-      // Already initialized for this open cycle
+    // Check if elements are already mounted
+    if (cardNumberRef.current) {
+      console.log('Stripe elements already initialized');
       return;
     }
 
@@ -123,7 +126,11 @@ export function AddCardModal({
     }
 
     try {
-      stripeRef.current = window.Stripe(stripePublishableKey);
+      // Initialize Stripe instance
+      if (!stripeRef.current) {
+        stripeRef.current = window.Stripe(stripePublishableKey);
+      }
+
       const elements = stripeRef.current.elements();
 
       const style = {
@@ -147,6 +154,7 @@ export function AddCardModal({
       cardExpiryRef.current.mount(cardExpiryEl);
       cardCvcRef.current.mount(cardCvcEl);
 
+      console.log('✅ Stripe elements initialized successfully');
       setElementsReady(true);
     } catch (err) {
       console.error("Stripe init failed", err);
@@ -173,7 +181,7 @@ export function AddCardModal({
    * Handle card submission with token-based flow (non-3D Secure)
    */
   const handleAddCard = async () => {
-    if (!stripeRef.current || !sessionId || !sessionIdentifier) {
+    if (!stripeRef.current || !userSessionId || !userSessionIdentifier) {
       toast.error('Payment system not ready');
       return;
     }
@@ -215,8 +223,8 @@ export function AddCardModal({
       console.log('💾 Step 2: Saving card to backend...');
       const response = await addCardWithToken(
         tokenData,
-        sessionId,
-        sessionIdentifier
+        userSessionId,
+        userSessionIdentifier
       );
 
       if (response.flag !== 143) {
@@ -230,25 +238,26 @@ export function AddCardModal({
       onCardAdded();
       onClose();
     } catch (error: any) {
-      console.error('❌ Add card failed:', error);
+      // console.error('❌ Add card failed:', error);
       toast.error(error.message || 'Failed to add card', { id: 'add-card' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl z-[200]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
               <CreditCard className="h-6 w-6 text-primary" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800">Add New Card</h2>
+            <DialogTitle className="text-xl font-bold text-gray-800">Add New Card</DialogTitle>
           </div>
           <button
             onClick={onClose}
@@ -275,7 +284,7 @@ export function AddCardModal({
                 </label>
                 <div
                   id="card-number-element"
-                  className="p-3 border-2 border-gray-200 rounded-lg focus-within:border-primary transition-colors"
+                  className="p-3 border-2 border-gray-200 rounded-lg focus-within:border-primary transition-colors h-11"
                 />
               </div>
 
@@ -287,7 +296,7 @@ export function AddCardModal({
                   </label>
                   <div
                     id="card-expiry-element"
-                    className="p-3 border-2 border-gray-200 rounded-lg focus-within:border-primary transition-colors"
+                    className="p-3 border-2 border-gray-200 rounded-lg focus-within:border-primary transition-colors h-11"
                   />
                 </div>
                 <div>
@@ -296,7 +305,7 @@ export function AddCardModal({
                   </label>
                   <div
                     id="card-cvc-element"
-                    className="p-3 border-2 border-gray-200 rounded-lg focus-within:border-primary transition-colors"
+                    className="p-3 border-2 border-gray-200 rounded-lg focus-within:border-primary transition-colors h-11"
                   />
                 </div>
               </div>
@@ -336,8 +345,8 @@ export function AddCardModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
