@@ -3,15 +3,16 @@ const nextConfig = {
   reactStrictMode: true,
 
   images: {
-    domains: ['localhost'],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "http",
+        hostname: "localhost",
+        pathname: "/**",
       },
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: "https",
+        hostname: "jugnoo-autos-drivers.s3-ap-southeast-1.amazonaws.com",
+        pathname: "/**",
       },
     ],
   },
