@@ -68,13 +68,13 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                     locale: "en"
                 });
 
-                if (active && response.data) {
-                    // Assuming response.data is the single ApiRideHistoryItem object
-                    // We cast it because the API response type is generic 'any' currently
-                    const mapped = mapApiRideToRideHistoryItem(response.data as ApiRideHistoryItem);
-                    console.log("ride history mapped", mapped);
-                    setDetailedRide(mapped);
-                }
+                // if (active && response.data) {
+                //     // Assuming response.data is the single ApiRideHistoryItem object
+                //     // We cast it because the API response type is generic 'any' currently
+                //     const mapped = mapApiRideToRideHistoryItem(response.data as ApiRideHistoryItem);
+                //     console.log("ride history mapped", mapped);
+                //     setDetailedRide(mapped);
+                // }
             } catch (error) {
                 console.log("Failed to fetch ride summary:", error);
                 toast.error("Failed to fetch ride summary");
@@ -131,7 +131,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const path = useMemo(() => {
         return routePath.length > 0 ? routePath : [];
     }, [routePath]);
-    console.log("path lat longs ->", path)
+    console.log("path lat longs ->",path)
     const handleRatingSubmitted = () => {
         // Refresh the page or refetch data after rating is submitted
         window.location.reload();

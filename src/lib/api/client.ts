@@ -65,7 +65,6 @@ apiClient.interceptors.request.use(
       '/open/v1/add_sqaure_card',
       '/open/v1/fetch_wallet_balance',  
     ];
-    console.log("Hello")
     const isSystemEndpoint = systemEndpoints.some(endpoint => config.url?.includes(endpoint));
     const isUserEndpoint = userEndpoints.some(endpoint => config.url?.includes(endpoint));
 
@@ -76,10 +75,7 @@ apiClient.interceptors.request.use(
     if (isUserEndpoint) {
       if (!userSessionId || !userSessionIdentifier) {
         // console.error('❌ User session required for:', config.url);
-        useAuthStore.getState().logout();
-        if (typeof window !== 'undefined') {
-          window.location.href = '/en/home';
-        }
+        handleSessionExpired();
         throw new axios.Cancel('User session required for this endpoint');
       }
       activeSessionId = userSessionId;
