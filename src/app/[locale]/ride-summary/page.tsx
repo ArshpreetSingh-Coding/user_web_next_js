@@ -216,7 +216,7 @@ export default function RideSummaryPage() {
               }
             /> */}
 
-            <Card className="px-4 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1 max-sm:mt-0">
+            <Card className="px-4 max-sm:border-none max-sm:shadow-none max-sm:px-1 max-sm:mt-0">
               <h1 className="H2">
                 Select Payment
               </h1>

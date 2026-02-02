@@ -198,7 +198,7 @@ export default function RideSuccessfulPage() {
   return (
     <section className="min-h-screen bg-[#f8f8f8]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <HeaderActions onBack={handleBackToHome} />
+        <HeaderActions onBack={handleBackToHome} backLabel="Home" />
 
         {/* Card */}
         <Card className="mt-6 rounded-3xl border-0 shadow-sm p-6 sm:p-8">

@@ -111,7 +111,7 @@ export function ProfileDialog({
 
                 <div className="px-3 py-2 space-y-3 bg-[#F7F7F7] rounded-lg">
                   {/* Theme Toggle Section */}
-                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  {/* <div className="bg-white rounded-lg p-4 border border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -146,7 +146,7 @@ export function ProfileDialog({
                         />
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Avatar Section */}
                   <div className="flex items-start justify-between">

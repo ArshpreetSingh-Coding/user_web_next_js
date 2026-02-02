@@ -53,8 +53,16 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  /* Updated: Secondary is now Orange */
+  --secondary: #F27D3A;
+  --secondary-foreground: oklch(0.985 0 0);
+  --secondary-rgb: 242, 125, 58;
+  --secondary-hover: #E06B28;
+  --secondary-light: #FFA366;
+  --secondary-dark: #D16829;
+  /* Previous secondary (grey) - commented out */
+  /* --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0); */
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -78,8 +86,19 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
-/* Orange Theme (Default) */
+/* Black Theme (Default) - Primary is Black, Secondary is Orange */
 :root,
+.theme-black {
+  --primary: #000000;
+  --primary-foreground: oklch(0.985 0 0); /* White text on black */
+  --primary-rgb: 0, 0, 0;
+  --primary-hover: #1a1a1a;
+  --primary-light: #333333;
+  --primary-dark: #000000;
+}
+
+/* Previous Orange Theme - Commented Out */
+/* :root,
 .theme-orange {
   --primary: #F27D3A;
   --primary-foreground: oklch(0.985 0 0);
@@ -87,17 +106,17 @@
   --primary-hover: #E06B28;
   --primary-light: #FFA366;
   --primary-dark: #D16829;
-}
+} */
 
-/* Blue Theme */
-.theme-blue {
+/* Previous Blue Theme - Commented Out */
+/* .theme-blue {
   --primary: #3B82F6;
   --primary-foreground: oklch(0.985 0 0);
   --primary-rgb: 59, 130, 246;
   --primary-hover: #2563EB;
   --primary-light: #60A5FA;
   --primary-dark: #1D4ED8;
-}
+} */
 
 .dark {
   --background: oklch(0.145 0 0);
@@ -106,10 +125,22 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  /* Updated: Primary is now white/light grey in dark mode for visibility */
+  --primary: oklch(0.95 0 0);
+  --primary-foreground: oklch(0.145 0 0);
+  /* Previous primary in dark mode - commented out */
+  /* --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0); */
+  /* Updated: Secondary is now Orange in dark mode */
+  --secondary: #F27D3A;
   --secondary-foreground: oklch(0.985 0 0);
+  --secondary-rgb: 242, 125, 58;
+  --secondary-hover: #E06B28;
+  --secondary-light: #FFA366;
+  --secondary-dark: #D16829;
+  /* Previous secondary in dark mode - commented out */
+  /* --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0); */
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);

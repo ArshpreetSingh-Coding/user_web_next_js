@@ -66,7 +66,7 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
                                 <div>
 
                                     {/* Header Section with Gradient */}
-                                    <div className="flex justify-between items-start relative bg-gradient-to-r from-primary to-primary-light p-6 text-white overflow-hidden">
+                                    <div className="flex justify-between items-start relative bg-primary from-primary to-primary-light p-6 text-white overflow-hidden">
                                         {/* Decorative background circle */}
                                         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl" />
 
@@ -97,7 +97,7 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
                                                 className="bg-white border-0 text-gray-900 placeholder:text-gray-400 h-11"
                                             />
                                             <Button
-                                                className="bg-gray-800 hover:bg-black text-white h-11 px-6 font-medium"
+                                                className="bg-white hover:bg-grey text-black h-11 px-6 font-medium"
                                                 onClick={() => {
                                                     if (!amount || parseFloat(amount) <= 0) {
                                                         // You can add toast notification here if needed

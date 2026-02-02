@@ -67,6 +67,8 @@ export default function BookingPage() {
     setCustomerPhone,
     customerCountryCode,
     setCustomerCountryCode,
+    driverNote,
+    setDriverNote,
   } = useBookingStore();
   const { isAuthenticated } = useAuthStore();
   const { openAuthModal } = useUIStore();
@@ -180,24 +182,47 @@ export default function BookingPage() {
   }
 
   const handleStepChange = useCallback((nextStep: number) => {
-    // Prevent unauthenticated users from proceeding past step 0
-    // if (nextStep > 1 && !isAuthenticated) {
-    //   openAuthModal();
-    //   return;
-    // }
-
-    if (nextStep >= 1 && !selectedRegion) {
-      toast.error('Please select a vehicle first');
+    // Step 0 (Enter Details): Clear selected vehicle and show form on mobile
+    if (nextStep === 0) {
+      setSelectedRegion(null);
+      setCurrentStepIndex(0);
+      // On mobile, show the form
+      if (typeof window !== "undefined" && window.innerWidth < 768) {
+        setIsMobileFormActive(true);
+      }
       return;
     }
 
+    // Step 1 (Select Car Type): Just set the step
     if (nextStep === 1) {
+      setCurrentStepIndex(1);
+      return;
+    }
+
+    // Step 2 (Payment): Navigate to ride-summary (like Next button)
+    if (nextStep === 2) {
+      if (!selectedRegion) {
+        toast.error('Please select a vehicle first');
+        return;
+      }
+      
+      // Validate flight number for airport rides
+      if (selectedService?.type === "airport_taxi" && !flightNumber.trim()) {
+        toast.error('Flight number is required for airport rides');
+        return;
+      }
+      
+      if (!isAuthenticated) {
+        openAuthModal();
+        return;
+      }
+      
       router.push(`/${locale}/ride-summary`);
       return;
     }
 
     setCurrentStepIndex(nextStep);
-  }, [selectedRegion, locale, router, setCurrentStepIndex, isAuthenticated, openAuthModal]);
+  }, [selectedRegion, locale, router, setCurrentStepIndex, isAuthenticated, openAuthModal, selectedService, flightNumber, setSelectedRegion, setIsMobileFormActive]);
 
   const onBack = useCallback(() => {
     if (typeof window !== "undefined" && window.innerWidth < 768 && currentStepIndex <= 1 && !isMobileFormActive) {
@@ -392,16 +417,17 @@ export default function BookingPage() {
 
             {/* Booking Details - shown on step 1 after vehicle selection */}
             {currentStepIndex === 1 && selectedRegion && (
-              <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1" id="booking-details-section">
-                <h2 className="H2 mb-3">Booking Details</h2>
-                <div className="space-y-4">
-                  {/* Book for someone else - Accordion */}
-                  <div className="border border-gray-200 rounded-lg">
+              <>
+                <Card className="px-4 sm:px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1" id="booking-details-section">
+                  <h2 className="H2 mb-3 text-base sm:text-lg">Booking Details</h2>
+                  <div className="space-y-4">
+                    {/* Book for someone else - Accordion */}
+                    <div className="border border-gray-200 rounded-lg">
                     <button
                       onClick={() => setIsBookingDetailsOpen(!isBookingDetailsOpen)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+                      className="w-full flex items-center justify-between p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
                     >
-                      <h3 className="text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
+                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
                       <svg
                         className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isBookingDetailsOpen ? 'rotate-180' : ''}`}
                         fill="none"
@@ -418,15 +444,15 @@ export default function BookingPage() {
                       }`}
                     >
                       <div className="px-4 pb-4 space-y-3">
-                        <div className="space-y-2 sm:flex sm:gap-12.5">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                           <input
                             type="text"
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
                             placeholder="Passenger name"
-                            className="w-[40%] p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            className="w-full sm:w-[40%] p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
                           />
-                          <div className="w-[55%]">
+                          <div className="w-full sm:w-[55%]">
                             <PhoneInput
                               phoneNumber={customerPhone}
                               countryCode={customerCountryCode || 'US'}
@@ -440,25 +466,44 @@ export default function BookingPage() {
                     </div>
                   </div>
 
-                  {/* Flight Number - only for airport taxi */}
-                  {selectedService?.type === "airport_taxi" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-900 flex items-center gap-1">
-                        Flight Number
-                        <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={flightNumber}
-                        onChange={(e) => setFlightNumber(e.target.value)}
-                        placeholder="e.g., AA123"
-                        maxLength={20}
-                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                    </div>
-                  )}
-                </div>
-              </Card>
+                    {/* Flight Number - only for airport taxi */}
+                    {selectedService?.type === "airport_taxi" && (
+                      <div className="space-y-2">
+                        <label className="text-xs sm:text-sm font-semibold text-gray-900 flex items-center gap-1">
+                          Flight Number
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={flightNumber}
+                          onChange={(e) => setFlightNumber(e.target.value)}
+                          placeholder="e.g., AA123"
+                          maxLength={20}
+                          className="w-full p-2 sm:p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm sm:text-base"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* Driver Note - Below Booking Details */}
+                <Card className="px-4 sm:px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
+                  <h2 className="H2 mb-3 text-base sm:text-lg">Note For Driver</h2>
+                  <div className="space-y-2">
+                    <textarea
+                      value={driverNote}
+                      onChange={(e) => setDriverNote(e.target.value)}
+                      placeholder="Write here..."
+                      maxLength={500}
+                      rows={3}
+                      className="w-full p-2 sm:p-2.5 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm sm:text-base"
+                    />
+                    <p className="text-xs sm:text-sm text-gray-500 text-right">
+                      {driverNote.length}/500
+                    </p>
+                  </div>
+                </Card>
+              </>
             )}
 
             {/* Vehicle Services Section - shown on step 1 after vehicle selection */}

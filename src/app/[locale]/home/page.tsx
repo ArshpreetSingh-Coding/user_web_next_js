@@ -37,7 +37,7 @@ export default function HomePage() {
           <div className="w-full lg:w-1/2 2xl:w-[60%] mt-10 2xl:mt-20 order-1 lg:order-1">
             <HeroSection
               heading={t('Welcome to')}
-              headingHighlight={t('Jugnoo Taxi')}
+              headingHighlight={t('BlackBadge Transportation')} 
               description={t('Book rides easily and quickly with our user-friendly app.Thanks to our advanced algorithm, we ensure you get the best ride options at the most competitive prices.')}
               primaryButtonLabel={t('Book a Ride')}
               secondaryButtonLabel={t('Register as Driver')}

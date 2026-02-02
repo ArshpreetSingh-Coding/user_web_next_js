@@ -73,10 +73,10 @@ export default function Stepper({
   );
 
   const setStepIndex = (index: number) => {
-    if(currentStep == 2) return;
+    // Allow clicking on all steps now - logic handled in onStepChange
     isControlled ? onStepChange?.(index) : setInternalStep(index);
   };
-  console.log("PROGRESS -> ",progress);
+  // console.log("PROGRESS -> ",progress);
   return (
     <div className="w-[90%] px-4 md:px-8 pb-4">
       <div className="relative flex items-center justify-center min-h-5">

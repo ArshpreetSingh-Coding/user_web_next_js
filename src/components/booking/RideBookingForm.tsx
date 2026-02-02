@@ -235,8 +235,8 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
               </div>
             </Card>
 
-            {/* Driver Note */}
-            <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+            {/* Driver Note - Moved to book page below booking details */}
+            {/* <Card className={`p-4 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
               <label className={`text-sm font-semibold mb-2 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
                 Note For Driver
               </label>
@@ -252,7 +252,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
                     : "border-white/30 bg-white/10 text-white placeholder:text-white/60 focus:ring-white/20"
                 }`}
               />
-            </Card>
+            </Card> */}
 
             {/* Additional Services */}
             {isBookPage && selectedRegion && (
