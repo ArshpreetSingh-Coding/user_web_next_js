@@ -19,6 +19,7 @@ import { SquareCardItem } from "@/components/payment/SquareCardItem";
 import { AddSquareCardModal } from "@/components/payment/AddSquareCardModal";
 import HeaderActions from "@/components/shared/HeaderActions";
 import { useSessionGuard } from "@/hooks/useSessionGuard";
+import { navigateWithLoader } from "@/lib/utils/navigationLoader";
 
 import {
   TitleBlock,
@@ -162,7 +163,7 @@ export default function RideSummaryPage() {
         toast.error(result.message || 'Request completed with issues', { id: 'schedule-ride' });
       }
 
-      router.push(`/${locale}/ride-successful`);
+      navigateWithLoader(router, `/${locale}/ride-successful`);
     } catch (err: any) {
       // console.error('❌ Schedule booking failed:', err);
       toast.error(err?.message || 'Failed to schedule ride', { id: 'schedule-ride' });
@@ -171,7 +172,7 @@ export default function RideSummaryPage() {
         message: err?.message || 'Failed to schedule ride',
         fareText: undefined,
       });
-      router.push(`/${locale}/ride-successful`);
+      navigateWithLoader(router, `/${locale}/ride-successful`);
     }
   }, [isSubmitting, locale, router, selectedPaymentMethod, selectedCardId, setBookingResult, submitPickupSchedule]);
 

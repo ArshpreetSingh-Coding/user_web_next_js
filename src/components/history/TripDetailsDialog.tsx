@@ -16,6 +16,7 @@ import { fetchRideSummary } from "@/lib/api/history.api";
 import { mapApiRideToRideHistoryItem } from "@/hooks/useHistory";
 import { ApiRideHistoryItem } from "@/types";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TripDetailsDialogProps {
     open: boolean;
@@ -131,7 +132,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const path = useMemo(() => {
         return routePath.length > 0 ? routePath : [];
     }, [routePath]);
-    console.log("path lat longs ->",path)
+    // console.log("path lat longs ->",path)
     const handleRatingSubmitted = () => {
         // Refresh the page or refetch data after rating is submitted
         window.location.reload();
@@ -139,12 +140,71 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
     if (!displayRide) return null;
 
+    // Animation variants for mobile (slide up from bottom)
+    const mobileVariants = {
+        hidden: { 
+            y: "100%",
+            opacity: 0
+        },
+        visible: { 
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: "spring",
+                damping: 30,
+                stiffness: 300
+            }
+        },
+        exit: { 
+            y: "100%",
+            opacity: 0,
+            transition: {
+                type: "spring",
+                damping: 30,
+                stiffness: 300
+            }
+        }
+    } as const;
+
+    // Animation variants for desktop (scale + fade)
+    const desktopVariants = {
+        hidden: { 
+            scale: 0.95,
+            opacity: 0
+        },
+        visible: { 
+            scale: 1,
+            opacity: 1,
+            transition: {
+                type: "spring",
+                damping: 25,
+                stiffness: 300
+            }
+        },
+        exit: { 
+            scale: 0.95,
+            opacity: 0,
+            transition: {
+                duration: 0.2
+            }
+        }
+    } as const;
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-full max-sm:rounded-none sm:max-w-4xl sm:bg-[#F9FAFB]">
 
                 {/* --- MOBILE VIEW (Premium Design) --- */}
-                <div className="flex sm:hidden flex-col h-full bg-white overflow-y-auto">
+                <AnimatePresence mode="wait">
+                    {open && (
+                        <motion.div
+                            key="mobile-dialog"
+                            variants={mobileVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="flex sm:hidden flex-col h-full bg-white overflow-y-auto"
+                        >
                     {/* Sticky Mobile Header */}
                     <div className="sticky top-0 z-10 flex items-center gap-4 px-4 py-4 border-b bg-white shrink-0">
                         <button onClick={() => onOpenChange(false)} className="p-1 -ml-1">
@@ -227,7 +287,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <Clock className="h-5 w-5 text-primary" />
-                                            <span className="text-sm font-semibold text-gray-700">{displayRide.duration}</span>
+                                            <span className="text-sm font-semibold text-gray-700">{displayRide.status === "Scheduled" ? t("Scheduled") : displayRide.duration}</span>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-primary font-bold text-lg">₹</span>
@@ -302,10 +362,21 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* --- DESKTOP VIEW (Original Design) --- */}
-                <div className="hidden sm:flex flex-col h-full bg-[#F9FAFB]">
+                <AnimatePresence mode="wait">
+                    {open && (
+                        <motion.div
+                            key="desktop-dialog"
+                            variants={desktopVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="hidden sm:flex flex-col h-full bg-[#F9FAFB]"
+                        >
                     <div className="p-4 border-b bg-white flex justify-between items-center">
                         <DialogTitle className="text-lg font-bold">{t("Trip Details")}</DialogTitle>
                         {/* <button onClick={() => onOpenChange(false)} className="text-gray-400 hover:text-gray-600">
@@ -365,8 +436,8 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
                                 >
                                     <div>
-                                        <h3 className="font-bold text-gray-900">/* Line 329 omitted */</h3>
-                                        <p className="text-sm text-gray-500">/* Line 330 omitted */</p>
+                                        <h3 className="font-bold text-gray-900">Rate your Trip</h3>
+                                        <p className="text-sm text-gray-500">Rate Your Trip to share feedback and add tip.</p>
                                     </div>
                                     <ChevronRight className="h-5 w-5 text-gray-400" />
                                 </div>
@@ -410,20 +481,20 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                         <div className="p-1.5 bg-primary/10 rounded text-primary">
                                             <Clock className="h-4 w-4" />
                                         </div>
-                                        {displayRide.duration}
+                                        {displayRide.status === "Scheduled" ? t("Scheduled") : displayRide.duration}
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <div className="p-1.5 bg-primary/10 rounded text-primary">
                                             <CreditCard className="h-4 w-4" />
                                         </div>
-                                        ₹{displayRide.price.toFixed(2)}
+                                        {displayRide.paymentMethod}
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-gray-600">
                                         <div className="p-1.5 bg-primary/10 rounded text-primary">
                                             {/* Cash Icon/Wallet Icon */}
                                             <span className="text-xs font-bold p-1.5">₹</span>
                                         </div>
-                                        {displayRide.paymentMethod}
+                                            ₹{displayRide.price.toFixed(2)}
                                     </div>
                                 </div>
 
@@ -505,7 +576,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
                         </div>
                     </div>
-                </div>
+                </motion.div>
+                    )}
+                </AnimatePresence>
             </DialogContent>
 
             {/* Rate Ride Dialog */}

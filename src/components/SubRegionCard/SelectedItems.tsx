@@ -94,7 +94,7 @@ function SelectedItems({
                 <span>
                   {i + 1}. {service.name}
                 </span>
-                <span>₹{service.price}</span>
+                <span>{service.price === 0 ? "Free" : `₹${service.price}`}</span>
               </div>
             ))}
           </div>

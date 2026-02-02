@@ -247,64 +247,82 @@ export default function RideSuccessfulPage() {
 
             <div className="h-0.75 bg-gray-100"></div>
               {/* Booking Details Section */}
-              {(customerName || customerPhone || flightNumber) && (
+              {(customerName || customerPhone || flightNumber || luggageCount > 0 || driverNote) && (
                 <>
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold text-gray-900">Booking Details</h3>
                     
-                    {/* Booking for someone else */}
-                    {(customerName || customerPhone) && (
-                      <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                        <h4 className="text-sm font-medium text-gray-700">Passenger Information</h4>
-                        {customerName && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Name:</span>
-                            <span className="text-sm font-medium text-gray-900">{customerName}</span>
-                          </div>
-                        )}
-                        {customerPhone && (
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Phone:</span>
-                            <span className="text-sm font-medium text-gray-900">
-                              {customerCountryCode ? `+${customerCountryCode} ` : ''}{customerPhone}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    {/* Merged Card with Two Columns */}
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative">
+                        {/* Left Column - Passenger Info & Flight Number */}
+                        <div className="space-y-3">
+                          {/* Passenger Information */}
+                          {(customerName || customerPhone) && (
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Passenger Information</h4>
+                              {customerName && (
+                                <div className="flex gap-[10px] items-center">
+                                  <span className="text-sm text-gray-600">Name:</span>
+                                  <span className="text-sm font-medium text-gray-900">{customerName}</span>
+                                </div>
+                              )}
+                              {customerPhone && (
+                                <div className="flex gap-[10px] items-center">
+                                  <span className="text-sm text-gray-600">Phone:</span>
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {customerCountryCode ? `+${customerCountryCode} ` : ''}{customerPhone}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
-                    {/* Flight Number */}
-                    {flightNumber && (
-                      <div className="bg-blue-50 rounded-lg p-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Flight Number:</span>
-                          <span className="text-sm font-semibold text-blue-900">{flightNumber}</span>
+                          {/* Flight Number */}
+                          {flightNumber && (
+                            <div className="space-y-1">
+                              <div className="flex gap-[10px] items-center">
+                                <span className="text-sm font-medium text-gray-700">Flight Number:</span>
+                                <span className="text-sm font-semibold text-blue-900">{flightNumber}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Vertical Divider - only show on desktop when luggage and notes exist */}
+                        {luggageCount > 0 && driverNote && (
+                          <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-200 -ml-px"></div>
+                        )}
+
+                        {/* Right Column - Luggage & Driver Note */}
+                        <div className="space-y-3">
+                          {/* Luggage Count */}
+                          {luggageCount > 0 && (
+                            <div className="space-y-1">
+                              <div className="flex gap-[10px] items-center">
+                              <h3 className="text-sm font-medium text-gray-700 mb-1">Luggage:</h3>
+                                <span className="text-sm font-medium text-gray-900">{luggageCount} {luggageCount === 1 ? 'bag' : 'bags'}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Driver Note */}
+                          {driverNote && (
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-medium text-gray-700 mb-1">Note for Driver</h4>
+                              <p className="text-sm text-gray-600">{driverNote}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
-
-                    {/* Luggage Count */}
-                    {luggageCount > 0 && (
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-sm text-gray-600">Luggage:</span>
-                        <span className="text-sm font-medium text-gray-900">{luggageCount} {luggageCount === 1 ? 'bag' : 'bags'}</span>
-                      </div>
-                    )}
-
-                    {/* Driver Note */}
-                    {driverNote && (
-                      <div className="bg-amber-50 rounded-lg p-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-1">Note for Driver</h4>
-                        <p className="text-sm text-gray-600">{driverNote}</p>
-                      </div>
-                    )}
+                    </div>
                   </div>
 
                   <div className="h-0.75 bg-gray-100"></div>
                 </>
               )}
 
-{/* Total Amount - existing code continues here */}
+            {/* Total Amount - existing code continues here */}
             <div className="">
               <div className="flex justify-between items-center py-2">
                 <h2 className="text-lg font-semibold">Total Amount</h2>

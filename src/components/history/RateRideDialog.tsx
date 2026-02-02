@@ -148,14 +148,13 @@ export function RateRideDialog({ open, onOpenChange, ride, onRatingSubmitted }: 
                         </Button>
                     </div>
                 </div>
-
                 {/* Desktop View */}
                 <div className="hidden sm:block bg-white">
                     {/* Header */}
                     <div className="flex items-center justify-between px-6 py-4 border-b">
                         <DialogTitle className="text-lg font-bold">{t("Rate Your Trip")}</DialogTitle>
                         <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
-                            <X className="h-5 w-5 text-gray-500" />
+                            {/* <X className="h-5 w-5 text-gray-500" /> */}
                         </button>
                     </div>
 

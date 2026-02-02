@@ -15,6 +15,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useUIStore } from '@/stores/ui.store';
 import type { SignupData } from '@/types';
 import { toast } from "sonner";
+import { navigateWithLoader } from "@/lib/utils/navigationLoader";
 
 export default function Navbar() {
   const { t } = useTranslations();
@@ -108,7 +109,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    setProfileOpen(false);
+    setTimeout(() => setProfileOpen(false), 400);
   };
 
   const openLogin = () => {
@@ -138,10 +139,10 @@ export default function Navbar() {
       setWalletOpen(true);
     } else if (item.key === 'history') {
       const locale = params?.locale || 'en';
-      router.push(`/${locale}/history`);
+      navigateWithLoader(router, `/${locale}/history`);
     } else if (item.key === 'support') {
       const locale = params?.locale || 'en';
-      router.push(`/${locale}/support`);
+      navigateWithLoader(router, `/${locale}/support`);
     } else {
       // Default behavior for other links if any
       router.push(`/#`);

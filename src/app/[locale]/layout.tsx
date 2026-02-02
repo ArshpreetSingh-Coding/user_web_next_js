@@ -17,6 +17,7 @@ import { redirect } from 'next/navigation';
 import ClientSessionHydrator from '@/components/shared/ClientSessionHydrator';
 import BookingNavigationGuard from '@/components/BookingNavigationGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
+import { PageLoadingSpinner } from '@/components/shared/PageLoadingSpinner';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -63,6 +64,7 @@ export default async function RootLayout({
           <BookingNavigationGuard />
           <ClientSessionHydrator session={initResult.sessionDetails} />
           <GoogleMapsLoader apiKey={(initResult.googleMapsKey || '')} />
+          <PageLoadingSpinner />
           <TranslationsProvider translations={translations}>
             <QueryProvider>
               <div className='min-h-screen flex flex-col'>
