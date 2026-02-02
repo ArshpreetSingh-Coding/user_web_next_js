@@ -109,7 +109,7 @@ export function RechargeWalletModal({
                 <DialogTitle className="sr-only">Recharge Wallet</DialogTitle>
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-primary to-primary-light text-white">
+                <div className="flex items-center justify-between p-6 border-b text-white">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white/20 rounded-lg">
                       <CreditCard className="h-6 w-6 text-white" />

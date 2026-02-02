@@ -95,14 +95,14 @@ export function LoginDialog({
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isLoading}
-                    className="flex-[0.35] h-10 text-[#FF6B35] bg-[#FFF4F0] border-0 rounded-md text-sm font-medium hover:bg-[#FFE8E0] hover:text-[#FF6B35]"
+                    className="flex-[0.35] h-10 text-black bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
                   >
                     {t("common.cancel")}
                   </Button>
                   <Button
                     onClick={handleProceed}
                     disabled={!phoneNumber.trim() || isLoading}
-                    className="flex-[0.65] h-10 bg-[#FF6B35] text-white border-0 rounded-md text-sm font-medium hover:bg-[#FF5520] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-[0.65] h-10 bg-black! text-white! border-0 rounded-md text-sm font-medium hover:bg-gray-800! disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? t("common.loading") || "Loading..." : t("auth.proceed")}
                   </Button>

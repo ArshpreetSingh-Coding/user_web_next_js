@@ -163,7 +163,7 @@ export function OtpDialog({
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className="flex-1 max-w-12 h-12 m-1 bg-[#F8FAFC] border-0 rounded-md text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-[#FF6B35] transition-all"
+                  className="flex-1 max-w-12 h-12 m-1 bg-[#F8FAFC] border-0 rounded-md text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               ))}
             </div>
@@ -175,14 +175,14 @@ export function OtpDialog({
               variant="outline"
               onClick={handleCancel}
               disabled={isLoading}
-              className="flex-[0.3] h-10 text-[#FF6B35] bg-[#FFF4F0] border-0 rounded-md text-sm font-medium hover:bg-[#FFE8E0] hover:text-[#FF6B35]"
+              className="flex-[0.3] h-10 text-black bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
             >
               {t("common.cancel")}
             </Button>
             <Button
               onClick={handleLogin}
               disabled={!isOtpComplete || isLoading}
-              className="flex-[0.7] h-10 bg-[#FF6B35] text-white border-0 rounded-md text-sm font-medium hover:bg-[#FF5520] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-[0.7] h-10 bg-black text-white border-0 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? t("common.loading") || "Loading..." : t("auth.login")}
             </Button>

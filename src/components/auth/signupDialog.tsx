@@ -250,14 +250,14 @@ export function SignupDialog({
               variant="outline"
               onClick={handleCancel}
               disabled={isLoading}
-              className="flex-[0.3] h-12 text-[#FF6B35] bg-[#FFF4F0] border-0 rounded-lg text-base font-medium hover:bg-[#FFE8E0] hover:text-[#FF6B35]"
+              className="flex-[0.3] h-12 text-black bg-white border border-gray-300 rounded-lg text-base font-medium hover:bg-gray-50"
             >
               {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSignUp}
               disabled={!isFormValid || isLoading}
-              className="flex-[0.7] h-12 bg-[#FF6B35] text-white border-0 rounded-lg text-base font-medium hover:bg-[#FF5520] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-[0.7] h-12 bg-black text-white border-0 rounded-lg text-base font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? t("common.loading") || "Loading..." : t("auth.signUp")}
             </Button>

@@ -111,7 +111,7 @@ export function ProfileDialog({
 
                 <div className="px-3 py-2 space-y-3 bg-[#F7F7F7] rounded-lg">
                   {/* Theme Toggle Section */}
-                  <div className="bg-white rounded-lg p-4 border border-gray-200">
+                  {/* <div className="bg-white rounded-lg p-4 border border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -146,7 +146,7 @@ export function ProfileDialog({
                         />
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Avatar Section */}
                   <div className="flex items-start justify-between">
@@ -180,7 +180,7 @@ export function ProfileDialog({
                           />
                           <button
                             onClick={handleButtonClick}
-                            className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#FF6B35] text-white flex items-center justify-center hover:bg-[#FF5520] transition-colors shadow-lg"
+                            className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center transition-colors shadow-lg"
                           >
                             <Camera className="w-4 h-4" />
                           </button>
@@ -261,7 +261,7 @@ export function ProfileDialog({
                   <Button
                     onClick={handleLogoutClick}
                     variant="ghost"
-                    className="w-full h-10 text-red-500 border border-gray-200 rounded-lg text-lg font-medium hover:bg-red-50 hover:text-red-600"
+                    className="w-full h-10 text-black border border-gray-200 rounded-lg text-lg font-medium hover:bg-red-50 hover:text-red-600"
                   >
                     {t("common.logout") || "Logout"}
                   </Button>
@@ -304,7 +304,7 @@ export function ProfileDialog({
                   <Button
                     variant="destructive"
                     onClick={confirmLogout}
-                    className="flex-1"
+                    className="flex-1 bg-black text-white"
                   >
                     {t("common.logout") || "Logout"}
                   </Button>

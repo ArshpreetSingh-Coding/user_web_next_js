@@ -82,7 +82,7 @@ export function useHistory(errorMessage: string, rideType?: string) {
     const [isMobile, setIsMobile] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const ITEMS_PER_PAGE = 12;
+    const ITEMS_PER_PAGE = 10;
 
     // Filter rides based on active tab
     const filteredRides = useMemo(() => {
@@ -218,6 +218,7 @@ export function useHistory(errorMessage: string, rideType?: string) {
         setRides([]);
         setCurrentPage(0);
         setHasMore(true);
+        setIsLoading(true);
     }, [activeTab, rideType]);
 
     return {
