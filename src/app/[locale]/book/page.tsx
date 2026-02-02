@@ -77,6 +77,7 @@ export default function BookingPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isLoadingCoupons, setIsLoadingCoupons] = useState(false);
   const [isMobileFormActive, setIsMobileFormActive] = useState(true);
+  const [isBookingDetailsOpen, setIsBookingDetailsOpen] = useState(false);
 
   // Fetch coupons on mount
   // useEffect(() => {
@@ -152,11 +153,11 @@ export default function BookingPage() {
       setVehicleServices(servicesWithEta);
       setSelectedServices([]);
       
-      // Scroll to services section after brief delay
+      // Scroll to booking details section after brief delay
       setTimeout(() => {
-        const servicesSection = document.getElementById('vehicle-services-section');
-        if (servicesSection) {
-          servicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const bookingDetailsSection = document.getElementById('booking-details-section');
+        if (bookingDetailsSection) {
+          bookingDetailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       }, 100);
     }
@@ -391,28 +392,50 @@ export default function BookingPage() {
 
             {/* Booking Details - shown on step 1 after vehicle selection */}
             {currentStepIndex === 1 && selectedRegion && (
-              <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1">
+              <Card className="px-6 mt-6 max-sm:border-none max-sm:shadow-none max-sm:px-1" id="booking-details-section">
                 <h2 className="H2 mb-3">Booking Details</h2>
                 <div className="space-y-4">
-                  {/* Book for someone else */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
-                    <div className="space-y-2 sm:flex sm:gap-12.5">
-                      <input
-                        type="text"
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        placeholder="Passenger name"
-                        className="w-[40%] p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                      <div className="w-[55%]">
-                        <PhoneInput
-                          phoneNumber={customerPhone}
-                          countryCode={customerCountryCode || 'US'}
-                          onPhoneNumberChange={setCustomerPhone}
-                          onCountryCodeChange={setCustomerCountryCode}
-                          placeholder="Passenger phone number"  
-                        />
+                  {/* Book for someone else - Accordion */}
+                  <div className="border border-gray-200 rounded-lg">
+                    <button
+                      onClick={() => setIsBookingDetailsOpen(!isBookingDetailsOpen)}
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+                    >
+                      <h3 className="text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
+                      <svg
+                        className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isBookingDetailsOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        isBookingDetailsOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="px-4 pb-4 space-y-3">
+                        <div className="space-y-2 sm:flex sm:gap-12.5">
+                          <input
+                            type="text"
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="Passenger name"
+                            className="w-[40%] p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          />
+                          <div className="w-[55%]">
+                            <PhoneInput
+                              phoneNumber={customerPhone}
+                              countryCode={customerCountryCode || 'US'}
+                              onPhoneNumberChange={setCustomerPhone}
+                              onCountryCodeChange={setCustomerCountryCode}
+                              placeholder="Passenger phone number"  
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import { useTranslations } from "@/lib/i18n/TranslationsProvider";
 import RideBookingForm from "@/components/booking/RideBookingForm";
 import HeroSection from "@/components/layout/HeroSection";
 import ActionButtonsGroup from "@/components/shared/ActionButtonsGroup";
 import { motion } from "framer-motion";
+import { navigateWithLoader } from "@/lib/utils/navigationLoader";
 
 export default function HomePage() {
+  const router = useRouter();
+  const params = useParams();
+  const locale = params?.locale || "en";
   const { t } = useTranslations();
   const [mounted, setMounted] = useState(false);
 
@@ -16,13 +21,11 @@ export default function HomePage() {
   }, []);
 
   const handleBookRide = () => {
-    // TODO: Implement book ride navigation
-    console.log("Book a ride clicked");
+    navigateWithLoader(router, `/${locale}/book`);
   };
 
   const handleRegisterDriver = () => {
-    // TODO: Implement register driver navigation
-    console.log("Register as driver clicked");
+    navigateWithLoader(router, `/${locale}/driver-app`);
   };
 
   return (

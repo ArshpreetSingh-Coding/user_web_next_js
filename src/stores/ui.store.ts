@@ -57,7 +57,7 @@ export const useUIStore = create<UIState>()(
       set({ isAuthModalOpen: true, authModalTab: tab }, false, 'ui/openAuthModal'),
 
     closeAuthModal: () =>
-      set({ isAuthModalOpen: false }, false, 'ui/closeAuthModal'),
+      setTimeout(() => set({ isAuthModalOpen: false }, false, 'ui/closeAuthModal'), 400),
 
     setAuthModalTab: (tab) =>
       set({ authModalTab: tab }, false, 'ui/setAuthModalTab'),

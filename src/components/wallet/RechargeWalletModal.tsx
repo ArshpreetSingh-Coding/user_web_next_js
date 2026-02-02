@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import CouponPaymentCard from "@/components/CouponPaymentCard";
 import { AddCardModal } from "@/components/payment/AddCardModal";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RechargeWalletModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function RechargeWalletModal({
   const [selectedCardId, setSelectedCardId] = useState<string | number | null>(null);
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const {
     balance,
@@ -45,9 +47,12 @@ export function RechargeWalletModal({
   // Refresh payment details when modal opens
   useEffect(() => {
     if (isOpen && !wasOpen.current) {
+      setIsVisible(true);
       refetch();
       setSelectedCardId(null);
       setIsAddCardModalOpen(false);
+    } else if (!isOpen) {
+      setIsVisible(false);
     }
     wasOpen.current = isOpen;
   }, [isOpen, refetch]);
@@ -72,7 +77,7 @@ export function RechargeWalletModal({
       if (response && (response.flag === 143 || response.flag === 200)) {
         toast.success('Wallet recharged successfully!', { id: 'wallet-recharge' });
         onRechargeComplete();
-        onClose();
+        setIsVisible(false);
       } else {
         throw new Error(response?.message || 'Failed to recharge wallet');
       }
@@ -84,122 +89,131 @@ export function RechargeWalletModal({
     }
   };
 
-  if (!isOpen) return null;
-
   const rechargeAmount = parseFloat(amount) || 0;
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent
-          showCloseButton={false}
-          className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl z-[100]"
-        >
-          <DialogTitle className="sr-only">Recharge Wallet</DialogTitle>
-
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-primary to-primary-light text-white">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">
-                <CreditCard className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Recharge Wallet</h2>
-                <p className="text-sm text-white/80 mt-1">
-                  Amount: ${rechargeAmount.toFixed(2)}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              disabled={isProcessing}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+      <AnimatePresence mode="wait" onExitComplete={() => !isVisible && onClose()}>
+        {isVisible && (
+          <Dialog open={true} onOpenChange={() => setIsVisible(false)}>
+            <DialogContent
+              showCloseButton={false}
+              className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl z-[100]"
             >
-              <X className="h-5 w-5 text-white" />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="p-6 max-h-[60vh] overflow-y-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12 gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <p className="text-gray-500">Loading payment methods...</p>
-              </div>
-            ) : !isStripeEnabled ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Card payments are not available in your area</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">
-                  Select Payment Method
-                </h3>
-
-                {/* Existing Stripe Cards */}
-                {stripeCards ? (
-                  stripeCards.map((card: StripeCard) => {
-                    const selected = selectedCardId === card.id;
-                    return (
-                      <CouponPaymentCard
-                        key={card.id}
-                        imgUrl={`/images/cards/${card.brand.toLowerCase()}.png`}
-                        title={`${card.brand} •••• ${card.last_4}`}
-                        subtitle={`Expires ${card.exp_month}/${card.exp_year}`}
-                        selected={selected}
-                        onClick={() => setSelectedCardId(card.id)}
-                      />
-                    );
-                  })
-                ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">
-                    No saved cards found
-                  </p>
-                )}
-
-                {/* Add New Card Button */}
-                <button
-                  onClick={() => setIsAddCardModalOpen(true)}
-                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-primary"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span className="font-medium">Add New Card</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          {isStripeEnabled && (
-            <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex gap-3">
-              <Button
-                variant="outline"
-                onClick={onClose}
-                disabled={isProcessing}
-                className="flex-1"
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
               >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleRecharge}
-                disabled={isProcessing || !selectedCardId || rechargeAmount <= 0}
-                className="flex-1 bg-primary hover:bg-primary/90"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Recharge ${rechargeAmount.toFixed(2)}
-                  </>
+                <DialogTitle className="sr-only">Recharge Wallet</DialogTitle>
+
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-primary to-primary-light text-white">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg">
+                      <CreditCard className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">Recharge Wallet</h2>
+                      <p className="text-sm text-white/80 mt-1">
+                        Amount: ${rechargeAmount.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsVisible(false)}
+                    disabled={isProcessing}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="h-5 w-5 text-white" />
+                  </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 max-h-[60vh] overflow-y-auto">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-12 gap-3">
+                      <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      <p className="text-gray-500">Loading payment methods...</p>
+                    </div>
+                  ) : !isStripeEnabled ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500">Card payments are not available in your area</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">
+                        Select Payment Method
+                      </h3>
+
+                      {/* Existing Stripe Cards */}
+                      {stripeCards ? (
+                        stripeCards.map((card: StripeCard) => {
+                          const selected = selectedCardId === card.id;
+                          return (
+                            <CouponPaymentCard
+                              key={card.id}
+                              imgUrl={`/images/cards/${card.brand.toLowerCase()}.png`}
+                              title={`${card.brand} •••• ${card.last_4}`}
+                              subtitle={`Expires ${card.exp_month}/${card.exp_year}`}
+                              selected={selected}
+                              onClick={() => setSelectedCardId(card.id)}
+                            />
+                          );
+                        })
+                      ) : (
+                        <p className="text-sm text-gray-500 text-center py-4">
+                          No saved cards found
+                        </p>
+                      )}
+
+                      {/* Add New Card Button */}
+                      <button
+                        onClick={() => setIsAddCardModalOpen(true)}
+                        className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 text-gray-600 hover:text-primary"
+                      >
+                        <Plus className="h-5 w-5" />
+                        <span className="font-medium">Add New Card</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                {isStripeEnabled && (
+                  <div className="p-6 border-t bg-gray-50 rounded-b-2xl flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsVisible(false)}
+                      disabled={isProcessing}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleRecharge}
+                      disabled={isProcessing || !selectedCardId || rechargeAmount <= 0}
+                      className="flex-1 bg-primary hover:bg-primary/90"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Recharge ${rechargeAmount.toFixed(2)}
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 )}
-              </Button>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+              </motion.div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
 
       {/* Add Card Modal */}
       {stripePublishableKey && (

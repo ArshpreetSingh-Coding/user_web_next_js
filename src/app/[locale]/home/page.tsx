@@ -7,6 +7,7 @@ import RideBookingForm from "@/components/booking/RideBookingForm";
 import HeroSection from "@/components/layout/HeroSection";
 import ActionButtonsGroup from "@/components/shared/ActionButtonsGroup";
 import { motion } from "framer-motion";
+import { navigateWithLoader } from "@/lib/utils/navigationLoader";
 
 export default function HomePage() {
   const router = useRouter();
@@ -20,11 +21,11 @@ export default function HomePage() {
   }, []);
 
   const handleBookRide = () => {
-    router.push('/book');
+    navigateWithLoader(router, `/${locale}/book`);
   };
 
   const handleRegisterDriver = () => {
-    router.push('/driver-app');
+    navigateWithLoader(router, `/${locale}/driver-app`);
   };
 
   return (
