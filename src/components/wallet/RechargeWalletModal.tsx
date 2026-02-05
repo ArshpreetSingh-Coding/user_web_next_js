@@ -98,7 +98,7 @@ export function RechargeWalletModal({
           <Dialog open={true} onOpenChange={() => setIsVisible(false)}>
             <DialogContent
               showCloseButton={false}
-              className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl z-[100]"
+              className="max-w-md w-full p-0 gap-0 border-none overflow-hidden bg-primary rounded-2xl z-[100]"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -124,14 +124,14 @@ export function RechargeWalletModal({
                   <button
                     onClick={() => setIsVisible(false)}
                     disabled={isProcessing}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                    className="p-2 hover:bg-primary/20 rounded-lg transition-colors"
                   >
                     <X className="h-5 w-5 text-white" />
                   </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 max-h-[60vh] overflow-y-auto">
+                <div className="p-6 max-h-[60vh] bg-white overflow-y-auto">
                   {isLoading ? (
                     <div className="flex items-center justify-center py-12 gap-3">
                       <Loader2 className="h-6 w-6 animate-spin text-primary" />

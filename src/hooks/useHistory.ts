@@ -40,7 +40,7 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
         location: dropAddr?.split(',')[0] || "Unknown",
         subLocation: apiRide.region_name || pickupAddr?.split(',')[0] || "Ride",
         price: Number(apiRide.customer_fare_estimate || apiRide.amount || 0),
-        date: apiRide.pickup_time || apiRide.created_at,
+        date: apiRide.pickup_time || apiRide.created_at || new Date().toISOString(),
         status: status,
         statusMessage: statusMessage,
         pickupLat: apiRide.latitude || apiRide.pickup_latitude || 0,
@@ -59,6 +59,8 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
         ride_type: apiRide.ride_type,
         historyIcon: apiRide.history_icon,
         pickupId: apiRide.pickup_id || apiRide.schedule_pickup_id, // For scheduled ride cancellation
+        poolFareId: apiRide.pool_fare_id, // For modify scheduled ride
+        paymentModeId: apiRide.preferred_payment_mode, // For modify scheduled ride
         flightNumber: apiRide.flight_number || "",
         customerNote: apiRide.customer_note || "",
         vehicleName: apiRide.vehicle_name || "",
@@ -82,7 +84,7 @@ export function useHistory(errorMessage: string, rideType?: string) {
     const [isMobile, setIsMobile] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const ITEMS_PER_PAGE = 10;
+    const ITEMS_PER_PAGE = 12;
 
     // Filter rides based on active tab
     const filteredRides = useMemo(() => {
@@ -94,6 +96,17 @@ export function useHistory(errorMessage: string, rideType?: string) {
 
     // Calculate total pages based on history size
     const totalPages = Math.ceil(historySize / ITEMS_PER_PAGE);
+
+    // Determine if pagination should be shown
+    // Hide pagination when limit is set and history size is less than or equal to limit
+    const shouldShowPagination = useMemo(() => {
+        if (activeTab === 'Scheduled' || activeTab === 'Completed') {
+            // These tabs have limit=50, show pagination only if historySize > 50
+            return historySize > 50;
+        }
+        // For other tabs, show pagination if there's more than one page
+        return totalPages > 1;
+    }, [activeTab, historySize, totalPages]);
 
     // Detect mobile on mount
     useEffect(() => {
@@ -129,15 +142,22 @@ export function useHistory(errorMessage: string, rideType?: string) {
                 // Map active tab to ride status filters
                 let ride_status_filter: number | undefined;
                 let past_ride_status_filter: number | undefined;
+                let limit: number | undefined;
+                let fetch_cancelled_scheduled_rides: number | undefined;
 
                 if (activeTab === 'Scheduled') {
                     ride_status_filter = 1;
+                    fetch_cancelled_scheduled_rides = 0;
+                    limit: ITEMS_PER_PAGE;
                 } else if (activeTab === 'Completed') {
-                    ride_status_filter = 0;
+                    ride_status_filter = 2
                     past_ride_status_filter = 1;
+                    limit: ITEMS_PER_PAGE;
+                    fetch_cancelled_scheduled_rides = 0;
                 } else if (activeTab === 'Cancelled') {
                     ride_status_filter = 2;
                     past_ride_status_filter = 2;
+                    limit: ITEMS_PER_PAGE;
                 }
                 // For 'All' tab, don't add any status filters
 
@@ -148,7 +168,9 @@ export function useHistory(errorMessage: string, rideType?: string) {
                     locale: "en",
                     ...(selected_service !== undefined && { selected_service }),
                     ...(ride_status_filter !== undefined && { ride_status_filter }),
-                    ...(past_ride_status_filter !== undefined && { past_ride_status_filter })
+                    ...(past_ride_status_filter !== undefined && { past_ride_status_filter }),
+                    ...(limit !== undefined && { limit }),
+                    ...(fetch_cancelled_scheduled_rides !== undefined && { fetch_cancelled_scheduled_rides })
                 }, controller.signal);
 
                 if (response.data && Array.isArray(response.data)) {
@@ -162,7 +184,7 @@ export function useHistory(errorMessage: string, rideType?: string) {
                     }
 
                     // Check if there are more items to load
-                    setHasMore(mappedRides.length === ITEMS_PER_PAGE);
+                    // setHasMore(mappedRides.length === ITEMS_PER_PAGE);
                 }
 
                 // Update history size if available
@@ -238,6 +260,7 @@ export function useHistory(errorMessage: string, rideType?: string) {
         isMobile,
         hasMore,
         isLoadingMore,
-        loadMore
+        loadMore,
+        shouldShowPagination
     };
 }

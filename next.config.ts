@@ -16,6 +16,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "jugnoo-autos-drivers.s3-ap-southeast-1.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "jugnoo-autos-ride-data.s3.amazonaws.com",
         pathname: "/**",
       },
@@ -27,6 +32,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "s3-ap-southeast-1.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "tablabar.s3.amazonaws.com",
         pathname: "/**",
       },
     ],

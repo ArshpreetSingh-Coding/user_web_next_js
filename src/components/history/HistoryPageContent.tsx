@@ -76,7 +76,8 @@ export function HistoryPageContent() {
         isMobile,
         hasMore,
         isLoadingMore,
-        loadMore
+        loadMore,
+        shouldShowPagination
     } = useHistory(t("Failed to load ride history"), rideType);
 
     // Infinite scroll handler for mobile
@@ -225,7 +226,7 @@ export function HistoryPageContent() {
                 {/* Dropdown */}
                 <div className="w-full md:w-auto">
                     <Select value={rideType} onValueChange={setRideType}>
-                        <SelectTrigger className="w-[140px] bg-gray-100 border-none rounded-2xl font-medium text-gray-700 focus:bg-white transition-colors">
+                        <SelectTrigger className="w-35 bg-gray-100 border-none rounded-2xl font-medium text-gray-700 focus:bg-white transition-colors">
                             <SelectValue placeholder={t("Daily")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -247,7 +248,7 @@ export function HistoryPageContent() {
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredRides.map((ride) => (
+                        {filteredRides.slice(0, activeTab === 'Completed' ? 12 : filteredRides.length).map((ride) => (
                             <HistoryCard
                                 key={ride.id}
                                 ride={ride}
@@ -263,8 +264,8 @@ export function HistoryPageContent() {
                         </div>
                     )}
 
-                    {/* Pagination - Desktop only */}
-                    {!isMobile && (
+                    {/* Pagination - Desktop only and only when needed */}
+                    {!isMobile && shouldShowPagination && (
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
@@ -324,7 +325,9 @@ export function HistoryPageContent() {
                                     {rideToCancel.location}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                    {format(new Date(rideToCancel.date), "MMM dd, h:mm a")}
+                                    {rideToCancel.date && !isNaN(new Date(rideToCancel.date).getTime())
+                                        ? format(new Date(rideToCancel.date), "MMM dd, h:mm a")
+                                        : "Date unavailable"}
                                 </p>
                             </div>
                         )}

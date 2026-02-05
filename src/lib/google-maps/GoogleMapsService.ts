@@ -61,7 +61,6 @@ class GoogleMapsService {
     try {
       await this.loadPromise;
       this.isLoaded = true;
-      console.log('✅ Google Maps loaded successfully');
       this.notifyStateChange();
     } catch (error) {
       console.error('❌ Failed to load Google Maps:', error);

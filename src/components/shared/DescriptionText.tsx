@@ -23,7 +23,7 @@ const DescriptionText = memo(({
   return (
     <p
       className={cn(
-        "font-normal text-sm lg:text-[18px] xl:text-[20px] leading-[130%] tracking-[-0.32px] text-gray-700",
+        "font-normal text-xs lg:text-sm xl:text-base leading-[130%] tracking-[-0.32px] text-gray-700",
         maxWidth,
         alignmentClass,
         className

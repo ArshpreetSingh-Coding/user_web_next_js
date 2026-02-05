@@ -40,7 +40,7 @@ const ScheduleField_Option3 = memo(({ value, onChange }: ScheduleFieldProps) => 
 
   return (
     <TimelineRow
-      icon={<Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />}
+      icon={<Clock className="w-4 h-4 sm:w-4 sm:h-4 text-primary" />}
       showConnectorAbove={true}
       showConnectorBelow={false}
     >
@@ -52,7 +52,7 @@ const ScheduleField_Option3 = memo(({ value, onChange }: ScheduleFieldProps) => 
         value={formatDateTimeLocal(value)}
         onChange={handleDateTimeChange}
         min={getMinDateTime()}
-        className="w-full h-10 lg:h-11 px-4 bg-white text-gray-900 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm"
+        className="w-full h-9 lg:h-11 px-4 bg-white text-gray-900 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm"
       />
     </TimelineRow>
   );

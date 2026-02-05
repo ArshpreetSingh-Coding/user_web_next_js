@@ -3,9 +3,37 @@ import { twMerge } from "tailwind-merge"
 import { API_ENDPOINTS } from "./api/endpoints";
 import { DefaultResponse } from "@/types";
 import apiClient from "./api/client";
+import { useOperatorParamsStore } from "./operatorParamsStore";
+const { setData } = useOperatorParamsStore.getState();
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function getUserWebConfig(raw: any) {
+  try {
+    if (!raw) return {};
+
+    let cleaned = raw.trim();
+
+    // 1) Remove wrapping backticks `
+    if (cleaned.startsWith("`") && cleaned.endsWith("`")) {
+      cleaned = cleaned.slice(1, -1);
+    }
+
+    // 2) Remove wrapping single quotes '
+    if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
+      cleaned = cleaned.slice(1, -1);
+    }
+
+    // 3) Parse JSON
+    // console.log('Parsed user_web_config:', JSON.parse(cleaned));
+    return JSON.parse(cleaned);
+
+  } catch (err) {
+    console.error("Failed to parse user_web_config:", err);
+    return {};
+  }
 }
 
 export async function generateHmacHash(data: string): Promise<string> {
@@ -38,7 +66,8 @@ export async function generateHmacHash(data: string): Promise<string> {
 export async function fetchOperatorParams(sessionDetails: any): Promise<DefaultResponse> {
   try {
     var reqObj = {
-      param_names: ['map_browser_key', 'autos_panel_theme']
+      param_names: ['user_web_config','map_browser_key', 'autos_panel_theme', 'default_country_code', 'default_country_iso', 'show_operator_logo_on_panel'],
+      get_operator_data: 1,
     }
 
     const headers = {
@@ -46,7 +75,7 @@ export async function fetchOperatorParams(sessionDetails: any): Promise<DefaultR
       'x-jugnoo-session-identifier': sessionDetails.session_identifier,
     }
     let response;
-    console.log("headers fetchOperatorParams", headers);
+    // console.log("headers fetchOperatorParams", headers);
     try {
       response = await apiClient.post(API_ENDPOINTS.PRODUCTION.AUTOS_BASE_URL + API_ENDPOINTS.AUTH.FETCH_OPERATOR_PARAMS, reqObj, {
         headers,
@@ -56,17 +85,27 @@ export async function fetchOperatorParams(sessionDetails: any): Promise<DefaultR
     catch (error) {
       console.log("error fetchOperatorParams", error);
     }
-    console.log("response fetchOperatorParams", response?.data.data.autos_panel_theme);
+    // console.log("response fetchOperatorParams", response?.data.data.autos_panel_theme);
 
 
-    // console.log('Fetch operator params response:', response.data);
+  console.log('Fetch operator params response:', response?.data.data);
     if (response?.status === 200) {
+      const data = response?.data.data;
+      
+      // Parse user_web_config if it exists
+      if (data.user_web_config) {
+        const parsedConfig = getUserWebConfig(data.user_web_config);
+        data.user_web_config = parsedConfig;
+      }
+      
+      // Store the operator params data
+      setData(data);
       return {
         success: true,
         message: 'Fetched operator params',
-        data: response?.data.data,
+        data: data,
       };
-    }
+    } 
 
     return {
       success: false,

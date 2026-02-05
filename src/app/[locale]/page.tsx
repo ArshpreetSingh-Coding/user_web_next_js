@@ -81,7 +81,7 @@ export default function HomePage() {
 
       {/* Car Image - Fixed at bottom left */}
       <motion.div
-        className="absolute lg:fixed bottom-5 left-5 sm:left-10 z-1 pointer-events-none"
+        className="absolute lg:fixed bottom-5 left-4 sm:left-6 lg:left-8 xl:left-[calc((100vw-1280px)/2+2rem)] 2xl:left-[calc((100vw-1536px)/2+2rem)] z-1 pointer-events-none"
         initial={mounted ? { x: -300, opacity: 0 } : false}
         animate={mounted ? { x: 0, opacity: 1 } : false}
         transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}

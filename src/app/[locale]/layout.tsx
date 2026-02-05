@@ -18,6 +18,7 @@ import ClientSessionHydrator from '@/components/shared/ClientSessionHydrator';
 import BookingNavigationGuard from '@/components/BookingNavigationGuard';
 import QueryProvider from '@/components/providers/QueryProvider';
 import { PageLoadingSpinner } from '@/components/shared/PageLoadingSpinner';
+import { OperatorParamsProvider } from '@/components/shared/OperatorParamsProvider';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -65,16 +66,18 @@ export default async function RootLayout({
           <ClientSessionHydrator session={initResult.sessionDetails} />
           <GoogleMapsLoader apiKey={(initResult.googleMapsKey || '')} />
           <PageLoadingSpinner />
-          <TranslationsProvider translations={translations}>
-            <QueryProvider>
-              <div className='min-h-screen flex flex-col'>
-                <Navbar />
-                <main className="flex-1">
-                  {children}
-                </main>
-              </div>
-            </QueryProvider>
-          </TranslationsProvider>
+          <OperatorParamsProvider operatorParams={initResult.operatorParams}>
+            <TranslationsProvider translations={translations}>
+              <QueryProvider>
+                <div className='min-h-screen flex flex-col'>
+                  <Navbar />
+                  <main className="flex-1">
+                    {children}
+                  </main>
+                </div>
+              </QueryProvider>
+            </TranslationsProvider>
+          </OperatorParamsProvider>
           <Toaster position="bottom-right" richColors />
         </ThemeProvider>
       </body>

@@ -28,6 +28,8 @@ export interface RideHistoryItem {
     ride_type?: number;
     historyIcon?: string;
     pickupId?: number | string; // For scheduled rides cancellation
+    poolFareId?: number; // For modify scheduled ride
+    paymentModeId?: number; // For modify scheduled ride
     // Scheduled ride specific fields
     flightNumber?: string;
     customerNote?: string;
@@ -101,7 +103,9 @@ export function HistoryCard({ ride, onClick, onCancel }: HistoryCardProps) {
 
                 <div className="mt-3 flex justify-between items-end">
                     <p className="text-[10px] sm:text-xs text-gray-400 font-medium">
-                        {format(new Date(ride.date), "MMM dd (h:mm a)")}
+                        {ride.date && !isNaN(new Date(ride.date).getTime()) 
+                            ? format(new Date(ride.date), "MMM dd (h:mm a)")
+                            : "Date unavailable"}
                     </p>
 
                     <div className="flex items-center gap-2">

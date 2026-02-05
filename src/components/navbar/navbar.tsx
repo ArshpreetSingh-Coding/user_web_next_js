@@ -5,7 +5,7 @@ import { useTranslations } from '@/lib/i18n/TranslationsProvider';
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { Menu, X, User } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/utils/constants";
 import { LoginDialog, SignupDialog, OtpDialog } from '@/components/auth/auth';
@@ -16,11 +16,13 @@ import { useUIStore } from '@/stores/ui.store';
 import type { SignupData } from '@/types';
 import { toast } from "sonner";
 import { navigateWithLoader } from "@/lib/utils/navigationLoader";
+import { useOperatorParamsStore } from '@/lib/operatorParamsStore';
 
 export default function Navbar() {
   const { t } = useTranslations();
   const router = useRouter();
   const params = useParams() as { locale?: string };
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [walletOpen, setWalletOpen] = useState(false);
   const {
@@ -47,10 +49,23 @@ export default function Navbar() {
   // Get auth state from store
   const { isAuthenticated, user, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('/black-badge-assets/ic_launcher.png');
+
+  // Subscribe to logo URL from store using selector
+  const storeLogoUrl = useOperatorParamsStore(
+    (state) => state.data.operatorDetails?.[0]?.logo_url || null
+  );
 
   // Handle hydration and custom events
   useEffect(() => {
     setMounted(true);
+
+    // Set logo from operator params store
+    if (storeLogoUrl) {
+      // console.log('Navbar: Setting operator logo from store:', storeLogoUrl);
+      // setLogoUrl(storeLogoUrl);
+      setLogoUrl('/black-badge.png')
+    }
 
     const handleOpenLogin = () => {
       openAuthModal('login');
@@ -60,7 +75,7 @@ export default function Navbar() {
     return () => {
       window.removeEventListener('open-login', handleOpenLogin);
     };
-  }, []);
+  }, [storeLogoUrl]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -139,7 +154,15 @@ export default function Navbar() {
       setWalletOpen(true);
     } else if (item.key === 'history') {
       const locale = params?.locale || 'en';
-      navigateWithLoader(router, `/${locale}/history`);
+      const target = `/${locale}/history`;
+      if (typeof window !== 'undefined' && pathname === target) {
+        // Already on history page — avoid re-navigating which can trigger infinite loading.
+        // Close mobile menu and scroll to top instead.
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setIsMobileMenuOpen(false);
+      } else {
+        navigateWithLoader(router, target);
+      }
     } else if (item.key === 'support') {
       const locale = params?.locale || 'en';
       navigateWithLoader(router, `/${locale}/support`);
@@ -160,13 +183,14 @@ export default function Navbar() {
       <nav>
         <header className="border-b bg-white shadow-l">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6 flex items-center justify-between">
-            <div className="text-2xl font-bold h-10 w-15 relative">
-              <Link href="/home">
+            <div className="flex items-center">
+              <Link href="/home" className="block">
                 <Image
-                  src="/black-badge-assets/ic_launcher.png"
+                  src={logoUrl}
                   alt="Jugnoo Logo"
-                  fill
-                  // className="object-contain"
+                  height={40}
+                  width={350}
+                  className="h-10 w-[150%] max-w-none"
                   priority
                 />
               </Link>

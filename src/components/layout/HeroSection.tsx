@@ -4,6 +4,7 @@ import DescriptionText from "@/components/shared/DescriptionText";
 import ActionButtonsGroup from "@/components/shared/ActionButtonsGroup";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { useOperatorParamsStore } from "@/lib/operatorParamsStore";
 
 interface HeroSectionProps {
   heading: string;
@@ -30,6 +31,17 @@ const HeroSection = memo(({
   showButtonsOnMobile = true,
   className,
 }: HeroSectionProps) => {
+  // Get dynamic content from operator params (fallback to hardcoded values)
+  // const operatorSubheading = useOperatorParamsStore(
+  //   (state) => state.data.hero_subheading || "Black Badge Transportation is a premium chauffeured car service built on trust, reliability, and personalized service."
+  // );
+
+  // Split the heading into main and highlight parts
+  const mainHeading = heading;
+  const highlightHeading = headingHighlight;
+
+  const operatorSubheading = description;
+
   return (
     <div className={cn("w-full max-w-4xl lg:mx-0", className)}>
       <div className={cn("max-w-4xl mx-auto lg:mx-0", align === "center" ? "text-center" : "text-center lg:text-left")}>
@@ -41,7 +53,7 @@ const HeroSection = memo(({
               transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
               className="inline-block"
             >
-              {headingHighlight}
+              {highlightHeading}
             </motion.span>
           }
           align={align}
@@ -52,20 +64,20 @@ const HeroSection = memo(({
             transition={{ duration: 1, ease: "easeOut" }}
             className="inline-block"
           >
-            {heading}
+            {mainHeading}
           </motion.span>
         </PageHeading>
 
         <DescriptionText
           align={align}
-          className="mt-3 sm:mt-4 lg:mt-5"
+          className="mt-1.5 sm:mt-2 lg:mt-3"
         >
-          {description}
+          {operatorSubheading}
         </DescriptionText>
       </div>
 
       <div className={cn(
-        "max-w-4xl mx-auto lg:mx-0 mt-4 lg:mt-8",
+        "max-w-4xl mx-auto lg:mx-0 mt-2 lg:mt-4",
         !showButtonsOnMobile && "hidden lg:block"
       )}>
         <ActionButtonsGroup
