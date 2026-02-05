@@ -54,7 +54,7 @@ const PickupLocationField = memo(({ value, onChange, className, variant }: Picku
 
   return (
     <TimelineRow
-      icon={<MapPin className={`w-4 h-4 sm:w-5 sm:h-5 text-primary ${variant === "outline" ? "text-black!" : ""}`} />}
+      icon={<MapPin className={`w-3 h-3 sm:w-4 sm:h-4 text-primary ${variant === "outline" ? "text-black!" : ""}`} />}
       showConnectorAbove={false}
       variant={variant}
     >
@@ -74,7 +74,7 @@ const PickupLocationField = memo(({ value, onChange, className, variant }: Picku
             onChange(null);
           }
         }}
-        className={`h-10 lg:h-11 px-4 bg-white text-gray-900 placeholder:text-gray-400 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm ${variant === "outline" ? "border border-border" : ""}`}
+        className={`h-9 lg:h-11 px-4 bg-white text-gray-900 placeholder:text-gray-400 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm ${variant === "outline" ? "border border-border" : ""}`}
       />
     </TimelineRow>
   );

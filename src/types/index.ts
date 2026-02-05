@@ -615,6 +615,7 @@ export interface ApiRideHistoryItem {
   drop_longitude: number;
   driver_rating: number;
   currency_symbol: string;
+  pool_fare_id: number;
   schedule_pickup_id: number;
   region_name: string;
   history_icon: string;
@@ -678,6 +679,26 @@ export interface CancelScheduledRideRequest {
 }
 
 export interface CancelScheduledRideResponse {
+  flag: number;
+  message?: string;
+  data?: any;
+}
+
+export interface ModifyScheduledRideRequest {
+  pickup_id: number;
+  pool_fare_id: number;
+  pickup_latitude: number;
+  pickup_longitude: number;
+  pickup_address: string;
+  pickup_time: string; // milliseconds as string
+  drop_latitude: number;
+  drop_longitude: number;
+  drop_address: string;
+  preferred_payment_mode: number;
+  customer_note?: string;
+}
+
+export interface ModifyScheduledRideResponse {
   flag: number;
   message?: string;
   data?: any;

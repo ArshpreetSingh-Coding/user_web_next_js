@@ -58,7 +58,7 @@ const StopItem = memo(({ stop, index, onUpdate, onRemove, variant }: StopItemPro
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <TimelineRow
-        icon={<Circle className={`w-3 h-3 sm:w-4 sm:h-4 text-primary fill-primary ${variant === "outline" ? "text-black! fill-black!" : ""}`} />}
+        icon={<Circle className={`w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary fill-primary ${variant === "outline" ? "text-black! fill-black!" : ""}`} />}
         iconSize="small"
         showConnectorAbove={true}
         variant={variant}
@@ -81,7 +81,7 @@ const StopItem = memo(({ stop, index, onUpdate, onRemove, variant }: StopItemPro
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
             aria-label={`Remove stop ${index + 1}`}
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3" />
           </button>
         </div>
       </TimelineRow>

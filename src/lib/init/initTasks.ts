@@ -1,7 +1,15 @@
 import apiClient from '@/lib/api/client';
 import { API_ENDPOINTS } from '@/lib/api/endpoints';
-import type { DefaultResponse, InitTasksResult } from '@/types';
+import type { DefaultResponse } from '@/types';
 import { fetchOperatorParams, generateHmacHash } from '../utils';
+
+interface InitTasksResult {
+  serviceAvailable: boolean;
+  error?: string;
+  googleMapsKey?: string;
+  sessionDetails?: any;
+  operatorParams?: any;
+}
 
 async function authorizeUser(): Promise<DefaultResponse> {
   try {
@@ -107,5 +115,6 @@ export async function runInitTasks(): Promise<InitTasksResult> {
     serviceAvailable: true,
     googleMapsKey: getParams.data.map_browser_key || "AIzaSyCMY3bKjonZwiWz4zvEcq189p2_woLcG9U",
     sessionDetails: sessionDetails,
+    operatorParams: getParams.data,
   };
 }

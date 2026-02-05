@@ -40,12 +40,12 @@ const ServiceSelector = memo(({ variant }: ServiceSelectorProps) => {
         onValueChange={handleServiceChange}
       >
         <SelectTrigger className={cn(
-          "w-full h-16 lg:h-16 px-4 py-6 bg-white text-gray-900 placeholder:text-gray-400 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-base rounded-lg",
+          "w-full h-7 lg:h-7 px-4 py-5 bg-white text-gray-900 placeholder:text-gray-400 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-base rounded-lg",
           variant === "outline" && "shadow-md"
         )}>
           <SelectValue placeholder="Choose a service" />
         </SelectTrigger>
-        <SelectContent className="bg-white rounded-lg shadow-lg border border-gray-200 max-h-[500px] overflow-auto">
+        <SelectContent className="bg-white rounded-lg shadow-lg border border-gray-200 max-h-[300px] overflow-auto">
           {serviceData.map((service) => (
             <SelectItem
               key={service.id || service.name}

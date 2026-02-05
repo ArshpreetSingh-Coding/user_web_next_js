@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 import { toast } from "sonner"
+import { motion } from "framer-motion"
 import type { OtpDialogProps, SignupData } from "@/types"
 
 export function OtpDialog({
@@ -137,7 +138,12 @@ export function OtpDialog({
         className="sm:max-w-[340px] max-w-[calc(100%-2rem)] p-4 max-h-[90vh] flex flex-col gap-1.5"
         showCloseButton={false}
       >
-        <DialogHeader className="space-y-2 flex-shrink-0">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        >
+          <DialogHeader className="space-y-2 flex-shrink-0">
           <DialogTitle className="text-xl font-semibold leading-tight text-left">
             {t("auth.loginToAccount")}
           </DialogTitle>
@@ -182,12 +188,13 @@ export function OtpDialog({
             <Button
               onClick={handleLogin}
               disabled={!isOtpComplete || isLoading}
-              className="flex-[0.7] h-10 bg-black text-white border-0 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-[0.7] h-10 bg-primary text-white border-0 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? t("common.loading") || "Loading..." : t("auth.login")}
             </Button>
           </div>
         </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   )

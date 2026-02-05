@@ -22,6 +22,7 @@ import { getCountryCallingCode, CountryCode, getCountries } from "libphonenumber
 import { useAuth } from "@/hooks/useAuth"
 import { useAuthStore } from "@/stores/auth.store"
 import { toast } from "sonner"
+import { motion } from "framer-motion"
 import type { SignupDialogProps, SignupData } from "@/types"
 
 export function SignupDialog({
@@ -144,7 +145,12 @@ export function SignupDialog({
         className="sm:max-w-[400px] max-w-[calc(100%-2rem)] p-5 gap-2"
         showCloseButton={false}
       >
-        <DialogHeader className="space-y-1">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        >
+          <DialogHeader className="space-y-1">
           <DialogTitle className="text-2xl font-semibold leading-tight text-left">
             {t("auth.createNewAccount")}
           </DialogTitle>
@@ -263,6 +269,7 @@ export function SignupDialog({
             </Button>
           </div>
         </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   )

@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { useWallet } from "@/hooks/useWallet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RechargeWalletModal } from "@/components/wallet/RechargeWalletModal";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface WalletDialogProps {
     open: boolean;
@@ -21,16 +21,12 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
     const { t } = useTranslations();
     const [amount, setAmount] = useState("");
     const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
     const { balance, currency, transactions,  isLoading, refetch } = useWallet();
     // console.log('💰 Wallet Data in Dialog:', { balance, currency, transactions, isLoading })        ;
     
     useEffect(() => {
         if (open) {
-            setIsVisible(true);
             refetch();
-        } else {
-            setIsVisible(false);
         }
     }, [open, refetch]);
 
@@ -53,16 +49,13 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
 
     return (
         <>
-            <AnimatePresence mode="wait" onExitComplete={() => !isVisible && onOpenChange(false)}>
-                {isVisible && (
-                    <Dialog open={true} onOpenChange={() => setIsVisible(false)}>
-                        <DialogContent showCloseButton={false} className="max-w-[480px] p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl">
-                            <motion.div
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.8, opacity: 0 }}
-                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            >
+            <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogContent showCloseButton={false} className="max-w-[480px] p-0 gap-0 border-none overflow-hidden bg-white rounded-2xl">
+                    <motion.div
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    >
                                 <div>
 
                                     {/* Header Section with Gradient */}
@@ -103,7 +96,7 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
                                                         // You can add toast notification here if needed
                                                         return;
                                                     }
-                                                    setIsVisible(false); // close wallet dialog
+                                                    onOpenChange(false); // close wallet dialog
                                                     setTimeout(() => setIsRechargeModalOpen(true), 300);
                                                 }}
                                             >
@@ -111,7 +104,7 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
                                             </Button>
                                         </div>
                                         <button
-                                            onClick={() => setIsVisible(false)}
+                                            onClick={() => onOpenChange(false)}
                                             className="p-1 rounded-full hover:bg-white/20 transition-colors -mt-3 -mr-4"
                                         >
                                             <X className="h-6 w-6 text-white" />
@@ -182,11 +175,9 @@ export function WalletDialog({ open, onOpenChange }: WalletDialogProps) {
                                         )}
                                     </div>
                                 </div>
-                            </motion.div>
-                        </DialogContent>
-                    </Dialog>
-                )}
-            </AnimatePresence>
+                    </motion.div>
+                </DialogContent>
+            </Dialog>
 
             {/* Recharge Wallet Modal */}
             <RechargeWalletModal

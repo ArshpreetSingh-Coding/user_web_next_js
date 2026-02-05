@@ -18,7 +18,7 @@ const PageHeading = memo(({ children, highlight, align = "left", className }: Pa
   return (
     <h1
       className={cn(
-        "font-bold text-4xl lg:text-[48px] xl:text-[52px] leading-[123%] tracking-[-2.24px]",
+        "font-bold text-2xl lg:text-[36px] xl:text-[42px] leading-[123%] tracking-[-2.24px]",
         alignmentClass,
         className
       )}

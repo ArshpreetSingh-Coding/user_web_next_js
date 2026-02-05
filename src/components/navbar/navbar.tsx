@@ -16,6 +16,7 @@ import { useUIStore } from '@/stores/ui.store';
 import type { SignupData } from '@/types';
 import { toast } from "sonner";
 import { navigateWithLoader } from "@/lib/utils/navigationLoader";
+import { useOperatorParamsStore } from '@/lib/operatorParamsStore';
 
 export default function Navbar() {
   const { t } = useTranslations();
@@ -47,10 +48,23 @@ export default function Navbar() {
   // Get auth state from store
   const { isAuthenticated, user, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('/black-badge-assets/ic_launcher.png');
+
+  // Subscribe to logo URL from store using selector
+  const storeLogoUrl = useOperatorParamsStore(
+    (state) => state.data.operatorDetails?.[0]?.logo_url || null
+  );
 
   // Handle hydration and custom events
   useEffect(() => {
     setMounted(true);
+
+    // Set logo from operator params store
+    if (storeLogoUrl) {
+      console.log('Navbar: Setting operator logo from store:', storeLogoUrl);
+      // setLogoUrl(storeLogoUrl);
+      setLogoUrl('/black-badge.png')
+    }
 
     const handleOpenLogin = () => {
       openAuthModal('login');
@@ -60,7 +74,7 @@ export default function Navbar() {
     return () => {
       window.removeEventListener('open-login', handleOpenLogin);
     };
-  }, []);
+  }, [storeLogoUrl]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -160,13 +174,14 @@ export default function Navbar() {
       <nav>
         <header className="border-b bg-white shadow-l">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6 flex items-center justify-between">
-            <div className="text-2xl font-bold h-10 w-15 relative">
-              <Link href="/home">
+            <div className="flex items-center">
+              <Link href="/home" className="block">
                 <Image
-                  src="/black-badge-assets/ic_launcher.png"
+                  src={logoUrl}
                   alt="Jugnoo Logo"
-                  fill
-                  // className="object-contain"
+                  height={40}
+                  width={300}
+                  className="h-10 w-auto max-w-none"
                   priority
                 />
               </Link>

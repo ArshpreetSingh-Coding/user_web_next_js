@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -8,6 +9,7 @@ import HeroSection from "@/components/layout/HeroSection";
 import ActionButtonsGroup from "@/components/shared/ActionButtonsGroup";
 import { motion } from "framer-motion";
 import { navigateWithLoader } from "@/lib/utils/navigationLoader";
+import { useOperatorParamsStore } from "@/lib/operatorParamsStore";
 
 export default function HomePage() {
   const router = useRouter();
@@ -15,6 +17,11 @@ export default function HomePage() {
   const locale = params?.locale || "en";
   const { t } = useTranslations();
   const [mounted, setMounted] = useState(false);
+  const { getUserWebConfig } = useOperatorParamsStore();
+  const config = getUserWebConfig();
+  const configHeading = config?.heading || "Welcome to,BlackBadge Transportation";
+  const configSubHeading = config?.sub_heading || "";
+  const [heading, headingHighlight] = configHeading.split(',').map((part: string) => part.trim());
 
   useEffect(() => {
     setMounted(true);
@@ -29,18 +36,21 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative min-h-[calc(100vh-88px)]">
-      {/* Content goes here */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 relative z-10 flex items-center">
-        <div className="flex flex-col lg:flex-row w-full justify-between gap-5 lg:gap-8 xl:gap-11">
-          {/* Left Section - Hero Content */}
-          <div className="w-full lg:w-1/2 2xl:w-[60%] mt-10 2xl:mt-20 order-1 lg:order-1">
+    <div className="relative min-h-[calc(100vh-88px)] pb-20 md:pb-24 lg:pb-24">
+      {/* Main Content */}
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-5 lg:py-4 relative z-10">
+        <div className="flex flex-col lg:flex-row w-full justify-between gap-6 lg:gap-8 xl:gap-10">
+          
+          {/* Hero Section */}
+          <div className="w-full lg:w-1/2 2xl:w-[60%] mt-6 lg:mt-10 2xl:mt-20 order-1">
             <HeroSection
-              heading={t('Welcome to')}
-              headingHighlight={t('BlackBadge Transportation')} 
-              description={t('Book rides easily and quickly with our user-friendly app.Thanks to our advanced algorithm, we ensure you get the best ride options at the most competitive prices.')}
-              primaryButtonLabel={t('Book a Ride')}
-              secondaryButtonLabel={t('Register as Driver')}
+              heading={t(heading)}
+              headingHighlight={t(headingHighlight)}
+              description={t(
+                configSubHeading
+              )}
+              primaryButtonLabel={t("Book a Ride")}
+              secondaryButtonLabel={t("Register as Driver")}
               onPrimaryClick={handleBookRide}
               onSecondaryClick={handleRegisterDriver}
               align="left"
@@ -48,12 +58,12 @@ export default function HomePage() {
             />
           </div>
 
-          {/* Mobile Buttons - Show below hero on mobile */}
+          {/* Mobile Action Buttons */}
           <div className="w-full mt-3 lg:hidden order-2">
             <div className="flex flex-col items-center">
               <ActionButtonsGroup
-                primaryLabel={t('Book a Ride')}
-                secondaryLabel={t('Register as Driver')}
+                primaryLabel={t("Book a Ride")}
+                secondaryLabel={t("Register as Driver")}
                 onPrimaryClick={handleBookRide}
                 onSecondaryClick={handleRegisterDriver}
                 orientation="vertical"
@@ -63,32 +73,30 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Section - Booking Form */}
-          <div className="w-full lg:w-1/2 xl:w-[50%] order-3 lg:order-3 mt-10 lg:mt-0 mb-32 lg:mb-0">
-            <div className="w-full max-w-[380px] lg:max-w-[420px] mx-auto lg:mx-0 lg:ml-auto">
-              <RideBookingForm />
+          {/* Booking Form */}
+          <div className="w-full lg:w-[80%] xl:w-[48%] order-3 lg:order-3 mt-10 lg:mt-0">
+            <div className="w-full max-w-100 mx-auto lg:mx-0 lg:ml-auto">
+              <RideBookingForm className="max-h-[calc(100vh-240px)] overflow-hidden" />
             </div>
           </div>
-
         </div>
       </section>
 
-      {/* Background images - Fixed at bottom */}
-      <div className="absolute  bottom-0 left-0 right-0 w-full z-0 pointer-events-none">
-        <div className="relative w-full h-32 sm:h-40 md:h-48 lg:h-56 bg-[url('/images/banners/Group.png')] bg-cover bg-center bg-no-repeat opacity-10" />
-        <div className="relative w-full h-16 sm:h-20 md:h-24 bg-[url('/images/banners/road.png')] bg-cover bg-center bg-no-repeat"></div>
+      {/* Background Banners */}
+      <div className="absolute bottom-0 left-0 right-0 w-full z-0 pointer-events-none">
+        <div className="relative w-full h-20 sm:h-24 md:h-32 lg:h-40 bg-[url('/images/banners/Group.png')] bg-cover bg-center bg-no-repeat opacity-10" />
+        <div className="relative w-full h-14 sm:h-18 md:h-22 bg-[url('/images/banners/road.png')] bg-cover bg-center bg-no-repeat" />
       </div>
 
-      {/* Car Image - Fixed at bottom left */}
+      {/* Car Animation */}
       <motion.div
-        className="absolute bottom-5 left-5 sm:left-10 z-1 pointer-events-none"
+        className="absolute bottom-6 left-4 sm:left-6 lg:left-8 xl:left-[calc((100vw-1280px)/2+2rem)] 2xl:left-[calc((100vw-1536px)/2+2rem)] z-10 pointer-events-none"
         initial={{ x: -1000 }}
         animate={mounted ? { x: 0 } : { x: -1000 }}
         transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
       >
-        <div className="relative w-48 sm:w-56 md:w-64 lg:w-80 h-24 sm:h-28 md:h-32 lg:h-40 bg-[url('/images/vehicles/mainCar.png')] bg-contain bg-left bg-no-repeat" />
+        <div className="relative w-40 sm:w-50 md:w-52 lg:w-90 h-30 sm:h-24 md:h-28 lg:h-40 bg-[url('/images/vehicles/mainCar.png')] bg-contain bg-left bg-no-repeat" />
       </motion.div>
     </div>
-
   );
 }

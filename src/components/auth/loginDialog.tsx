@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { getCountryCallingCode, CountryCode } from "libphonenumber-js"
 import { useAuth } from "@/hooks/useAuth"
 import { toast } from "sonner"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import type { LoginDialogProps } from "@/types"
 
 export function LoginDialog({
@@ -24,16 +24,7 @@ export function LoginDialog({
   const { t } = useTranslations()
   const [countryCode, setCountryCode] = React.useState("IN")
   const [phoneNumber, setPhoneNumber] = React.useState("")
-  const [isVisible, setIsVisible] = React.useState(false)
   const { generateOtp, isLoading } = useAuth()
-
-  React.useEffect(() => {
-    if (open) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  }, [open]);
 
   const handleProceed = async () => {
     if (phoneNumber.trim()) {
@@ -55,21 +46,18 @@ export function LoginDialog({
 
   const handleCancel = () => {
     setPhoneNumber("")
-    setIsVisible(false)
+    onOpenChange?.(false)
   }
 
   return (
-    <AnimatePresence mode="wait" onExitComplete={() => !isVisible && onOpenChange?.(false)}>
-      {isVisible && (
-        <Dialog open={true} onOpenChange={() => setIsVisible(false)}>
-          <DialogContent className="sm:max-w-[360px] max-w-[calc(100%-2rem)] p-4">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            >
-              <DialogHeader className="space-y-1.5">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[360px] max-w-[calc(100%-2rem)] p-4">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        >
+          <DialogHeader className="space-y-1.5">
                 <DialogTitle className="text-xl font-semibold leading-tight text-left">
                   {t("auth.loginToAccount")}
                 </DialogTitle>
@@ -102,16 +90,14 @@ export function LoginDialog({
                   <Button
                     onClick={handleProceed}
                     disabled={!phoneNumber.trim() || isLoading}
-                    className="flex-[0.65] h-10 bg-black! text-white! border-0 rounded-md text-sm font-medium hover:bg-gray-800! disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-[0.65] h-10 bg-primary! text-white! border-0 rounded-md text-sm font-medium hover:bg-gray-800! disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? t("common.loading") || "Loading..." : t("auth.proceed")}
                   </Button>
                 </div>
               </div>
-            </motion.div>
-          </DialogContent>
-        </Dialog>
-      )}
-    </AnimatePresence>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
   )
 }

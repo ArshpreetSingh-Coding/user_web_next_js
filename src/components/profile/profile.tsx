@@ -84,16 +84,14 @@ export function ProfileDialog({
 
   return (
     <>
-      <AnimatePresence mode="wait" onExitComplete={() => !isVisible && onOpenChange?.(false)}>
-        {isVisible && (
-          <Dialog open={true} onOpenChange={() => setIsVisible(false)}>
-            <DialogContent className="sm:max-w-[400px] max-w-[calc(100%-2rem)] p-4">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
-              >
+      {isVisible && (
+        <Dialog open={true} onOpenChange={() => { setIsVisible(false); onOpenChange?.(false); }}>
+          <DialogContent className="sm:max-w-[400px] max-w-[calc(100%-2rem)] p-4">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+            >
                 {/* Header */}
                 <DialogHeader className="px-2">
                   <div className="flex items-center justify-between">
@@ -154,7 +152,7 @@ export function ProfileDialog({
                       <div className="w-20 h-20 rounded-full overflow-hidden">
                         {avatar ? (
                           <Image
-                            src={avatar}
+                            src={avatar || "/images/default.png"}
                             alt="Profile"
                             width={80}
                             height={80}
@@ -270,19 +268,16 @@ export function ProfileDialog({
             </DialogContent>
           </Dialog>
         )}
-      </AnimatePresence>
 
       {/* Logout Confirmation Dialog */}
-      <AnimatePresence>
-        {showLogoutConfirm && (
-          <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-            <DialogContent className="sm:max-w-[300px] max-w-[calc(100%-2rem)] p-4">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              >
+      {showLogoutConfirm && (
+        <Dialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+          <DialogContent className="sm:max-w-[300px] max-w-[calc(100%-2rem)] p-4">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            >
                 <DialogHeader>
                   <DialogTitle className="text-xl font-semibold">
                     {t("common.logout") || "Logout"}
@@ -309,11 +304,10 @@ export function ProfileDialog({
                     {t("common.logout") || "Logout"}
                   </Button>
                 </div>
-              </motion.div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   )
 }

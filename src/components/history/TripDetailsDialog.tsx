@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { RideHistoryItem } from "./HistoryCard";
 import { RateRideDialog } from "./RateRideDialog";
+import { ModifyRideDialog } from "./ModifyRideDialog";
 import { format } from "date-fns";
 import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
 import { mapsService } from "@/lib/google-maps/GoogleMapsService";
@@ -45,6 +46,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
     const [isLoading, setIsLoading] = useState(false);
     const [routePath, setRoutePath] = useState<{ lat: number; lng: number }[]>([]);
     const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+    const [modifyDialogOpen, setModifyDialogOpen] = useState(false);
 
     useEffect(() => {
         setRoutePath([]); // Reset path when ride changes
@@ -154,15 +156,6 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                 damping: 30,
                 stiffness: 300
             }
-        },
-        exit: { 
-            y: "100%",
-            opacity: 0,
-            transition: {
-                type: "spring",
-                damping: 30,
-                stiffness: 300
-            }
         }
     } as const;
 
@@ -180,13 +173,6 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                 damping: 25,
                 stiffness: 300
             }
-        },
-        exit: { 
-            scale: 0.95,
-            opacity: 0,
-            transition: {
-                duration: 0.2
-            }
         }
     } as const;
 
@@ -195,16 +181,13 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
             <DialogContent className="p-0 overflow-hidden border-none max-sm:h-full max-sm:max-w-full max-sm:rounded-none sm:max-w-4xl sm:bg-[#F9FAFB]">
 
                 {/* --- MOBILE VIEW (Premium Design) --- */}
-                <AnimatePresence mode="wait">
-                    {open && (
-                        <motion.div
-                            key="mobile-dialog"
-                            variants={mobileVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            className="flex sm:hidden flex-col h-full bg-white overflow-y-auto"
-                        >
+                <motion.div
+                    key="mobile-dialog"
+                    variants={mobileVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="flex sm:hidden flex-col h-full bg-white overflow-y-auto"
+                >
                     {/* Sticky Mobile Header */}
                     <div className="sticky top-0 z-10 flex items-center gap-4 px-4 py-4 border-b bg-white shrink-0">
                         <button onClick={() => onOpenChange(false)} className="p-1 -ml-1">
@@ -244,7 +227,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 </div>
                                 <div className="space-y-1">
                                     <h3 className="text-lg font-bold text-gray-800 leading-tight">
-                                        {format(new Date(displayRide.date), "h:mm a, EEEE, MMMM d, yyyy")} {t("with")} {displayRide.driverName}
+                                        {displayRide.date && !isNaN(new Date(displayRide.date).getTime())
+                                            ? format(new Date(displayRide.date), "h:mm a, EEEE, MMMM d, yyyy")
+                                            : "Date unavailable"} {t("with")} {displayRide.driverName}
                                     </h3>
                                     <p className="text-sm text-gray-500 font-medium">{t("Ride ID")}: #{displayRide.id}</p>
                                 </div>
@@ -279,7 +264,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                             <span className="text-sm font-semibold text-gray-800 line-clamp-2 leading-snug">{displayRide.dropAddress}</span>
                                         </div>
                                     </div>
-                                    <div className="text-xs font-semibold text-gray-400">{t("Pickup Time")}: {format(new Date(displayRide.date), "h:mm a")}</div>
+                                    <div className="text-xs font-semibold text-gray-400">{t("Pickup Time")}: {displayRide.date && !isNaN(new Date(displayRide.date).getTime())
+                                        ? format(new Date(displayRide.date), "h:mm a")
+                                        : "N/A"}</div>
                                     <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-gray-50 pt-4">
                                         <div className="flex items-center gap-3">
                                             <Navigation className="h-5 w-5 text-primary" />
@@ -318,6 +305,14 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                             {displayRide.status === "Scheduled" && (
                                 <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4">
                                     <h3 className="font-bold text-gray-900 text-base">{t("Booking Details")}</h3>
+
+                                    {/* Modify Ride Button */}
+                                    <button
+                                        onClick={() => setModifyDialogOpen(true)}
+                                        className="w-full bg-primary hover:bg-primary/90 text-white p-4 rounded-xl font-semibold transition-colors"
+                                    >
+                                        {t("Modify Ride")}
+                                    </button>
 
                                     {displayRide.flightNumber && (
                                         <div className="bg-blue-50 rounded-lg p-4">
@@ -363,20 +358,15 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         </div>
                     </div>
                 </motion.div>
-                    )}
-                </AnimatePresence>
 
                 {/* --- DESKTOP VIEW (Original Design) --- */}
-                <AnimatePresence mode="wait">
-                    {open && (
-                        <motion.div
-                            key="desktop-dialog"
-                            variants={desktopVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            className="hidden sm:flex flex-col h-full bg-[#F9FAFB]"
-                        >
+                <motion.div
+                    key="desktop-dialog"
+                    variants={desktopVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="hidden sm:flex flex-col h-full bg-[#F9FAFB]"
+                >
                     <div className="p-4 border-b bg-white flex justify-between items-center">
                         <DialogTitle className="text-lg font-bold">{t("Trip Details")}</DialogTitle>
                         {/* <button onClick={() => onOpenChange(false)} className="text-gray-400 hover:text-gray-600">
@@ -419,7 +409,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                             {/* Bottom Info on Left */}
                             <div className="space-y-1">
                                 <div className="font-semibold text-gray-900 text-lg">
-                                    {format(new Date(displayRide.date), "h:mm a, EEEE, MMMM d, yyyy")} {t("with")}
+                                    {displayRide.date && !isNaN(new Date(displayRide.date).getTime())
+                                        ? format(new Date(displayRide.date), "h:mm a, EEEE, MMMM d, yyyy")
+                                        : "Date unavailable"} {t("with")}
                                 </div>
                                 <div className="font-bold text-xl text-gray-800">{displayRide.driverName}</div>
                                 <div className="text-sm text-gray-500">{t("Ride ID")}: #{displayRide.id}</div>
@@ -466,7 +458,9 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 </div>
 
                                 <div className="text-xs font-medium text-gray-500 pt-1">
-                                    {t("Pickup Time")}: {format(new Date(displayRide.date), "h:mm a")}
+                                    {t("Pickup Time")}: {displayRide.date && !isNaN(new Date(displayRide.date).getTime())
+                                        ? format(new Date(displayRide.date), "h:mm a")
+                                        : "N/A"}
                                 </div>
 
                                 {/* Metrics Grid */}
@@ -532,6 +526,14 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 space-y-3">
                                     <h3 className="font-bold text-gray-900">{t("Booking Details")}</h3>
 
+                                    {/* Modify Ride Button */}
+                                    <button
+                                        onClick={() => setModifyDialogOpen(true)}
+                                        className="w-full bg-primary hover:bg-primary/90 text-white p-3 rounded-lg font-semibold transition-colors"
+                                    >
+                                        {t("Modify Ride")}
+                                    </button>
+
                                     {displayRide.flightNumber && (
                                         <div className="bg-blue-50 rounded-lg p-3">
                                             <div className="flex justify-between items-center">
@@ -577,8 +579,6 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                         </div>
                     </div>
                 </motion.div>
-                    )}
-                </AnimatePresence>
             </DialogContent>
 
             {/* Rate Ride Dialog */}
@@ -587,6 +587,17 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                 onOpenChange={setRatingDialogOpen}
                 ride={displayRide}
                 onRatingSubmitted={handleRatingSubmitted}
+            />
+
+            {/* Modify Ride Dialog */}
+            <ModifyRideDialog
+                open={modifyDialogOpen}
+                onOpenChange={setModifyDialogOpen}
+                ride={displayRide}
+                onModifySuccess={() => {
+                    // Refresh the page or refetch data after modification
+                    window.location.reload();
+                }}
             />
         </Dialog>
     );

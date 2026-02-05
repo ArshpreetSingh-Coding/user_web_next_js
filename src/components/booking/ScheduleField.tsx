@@ -115,7 +115,7 @@ const ScheduleField = memo(({ value, onChange, className, variant }: ScheduleFie
 
   return (
     <TimelineRow
-      icon={<Clock className={`w-4 h-4 sm:w-5 sm:h-5 text-primary ${variant === "outline" ? "text-black!" : ""}`} />}
+      icon={<Clock className={`w-3 h-3 sm:w-4 sm:h-4 text-primary ${variant === "outline" ? "text-black!" : ""}`} />}
       showConnectorAbove={true}
       showConnectorBelow={false}
       variant={variant}
@@ -135,13 +135,13 @@ const ScheduleField = memo(({ value, onChange, className, variant }: ScheduleFie
               placeholder="Select Date & Time"
               value={formatDisplayValue(value)}
               className={cn(
-                "h-10 lg:h-11 px-4 pr-10 bg-white text-gray-900 placeholder:text-gray-400 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm cursor-pointer transition-all duration-200 hover:bg-gray-50",
+                "h-9 lg:h-11 px-4 pr-10 bg-white text-gray-900 placeholder:text-gray-400 border-0 focus-visible:ring-2 focus-visible:ring-white/50 text-sm cursor-pointer transition-all duration-200 hover:bg-gray-50",
                 variant === "outline" ? "border border-border" : "",
                 className
               )}
             />
 
-            <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
+            <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
           </div>
         </PopoverTrigger>
         <PopoverContent className="w-[280px] p-0 bg-white border-neutral-200 shadow-2xl rounded-2xl overflow-hidden" align="start" sideOffset={8}>

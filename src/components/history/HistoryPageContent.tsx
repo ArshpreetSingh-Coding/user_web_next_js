@@ -76,7 +76,8 @@ export function HistoryPageContent() {
         isMobile,
         hasMore,
         isLoadingMore,
-        loadMore
+        loadMore,
+        shouldShowPagination
     } = useHistory(t("Failed to load ride history"), rideType);
 
     // Infinite scroll handler for mobile
@@ -263,8 +264,8 @@ export function HistoryPageContent() {
                         </div>
                     )}
 
-                    {/* Pagination - Desktop only */}
-                    {!isMobile && (
+                    {/* Pagination - Desktop only and only when needed */}
+                    {!isMobile && shouldShowPagination && (
                         <Pagination
                             currentPage={currentPage}
                             totalPages={totalPages}
@@ -324,7 +325,9 @@ export function HistoryPageContent() {
                                     {rideToCancel.location}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                    {format(new Date(rideToCancel.date), "MMM dd, h:mm a")}
+                                    {rideToCancel.date && !isNaN(new Date(rideToCancel.date).getTime())
+                                        ? format(new Date(rideToCancel.date), "MMM dd, h:mm a")
+                                        : "Date unavailable"}
                                 </p>
                             </div>
                         )}

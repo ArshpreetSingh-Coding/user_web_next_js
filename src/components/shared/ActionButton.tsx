@@ -25,7 +25,7 @@ const ActionButton = memo(({
       variant={variant}
       size={size}
       className={cn(
-        "py-5 px-6 sm:px-8 hover:scale-105 transition-transform",
+        "py-3 px-4 sm:px-6 hover:scale-105 transition-transform",
         fullWidth ? "w-full" : "w-full sm:w-48",
         variant === "outline" && "text-primary",
         className

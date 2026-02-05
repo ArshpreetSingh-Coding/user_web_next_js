@@ -22,7 +22,7 @@ const AddStopButton = memo(({ onClick, mounted, className, variant }: AddStopBut
   >
     <motion.button
       onClick={onClick}
-      className="text-left text-xs lg:text-sm font-medium text-white hover:text-white/80 transition-colors flex items-center gap-2 py-2"
+      className="text-left text-xs lg:text-sm font-medium text-white hover:text-white/80 transition-colors flex items-center gap-2 h-9 lg:h-11 mt-5"
       whileHover={mounted ? { x: 4 } : undefined}
       transition={{ duration: 0.2 }}
       type="button"
