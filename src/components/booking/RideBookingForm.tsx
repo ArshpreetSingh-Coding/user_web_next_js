@@ -22,7 +22,7 @@ import { useBookingStore } from "@/stores/booking.store";
 import { useUIStore } from "@/stores/ui.store";
 import { useFindADrivers } from "@/hooks/useFindADrivers";
 
-const RideBookingForm = ({ className, variant }: { className?: string; variant?: "outline" | "filled" }) => {
+const RideBookingForm =   ({ className, variant }: { className?: string; variant?: "outline" | "filled" }) => {
   const [mounted, setMounted] = useState(false);
   const [isBookForOtherOpen, setIsBookForOtherOpen] = useState(false);
   const [showOtherOptions, setShowOtherOptions] = useState(false);
@@ -132,12 +132,10 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
 
     try {
       const result = await calculateFareAndFindDrivers();
-      // console.log("+++++++++", result);
       toast.success(
         `Found ${result.vehicles.length} vehicles. Route: ${result.route.distanceText}, ${result.route.durationText}`
       );
     } catch (err) {
-      // console.error("❌ Error calculating fare:", err);
       toast.error("Failed to calculate fare. Please try again.");
     }
   }, [
@@ -166,7 +164,7 @@ const RideBookingForm = ({ className, variant }: { className?: string; variant?:
   // console.log("selectedService", selectedService?.type)
   return (
     <div
-      className={`w-full max-w-[450px] px-6 py-4 lg:px-6 lg:py-6 bg-primary rounded-lg flex flex-col ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
+      className={`w-full max-w-112.5 px-6 py-4 lg:px-6 lg:py-6 bg-primary rounded-lg flex flex-col ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
     >
       <h2
         className={`text-sm lg:text-[20px] font-semibold text-white mb-3 lg:mb-5 shrink-0 ${variant === "outline" ? "text-black!" : ""}`}
