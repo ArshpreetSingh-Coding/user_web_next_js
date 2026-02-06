@@ -1,4 +1,5 @@
 import React, { memo, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 
 // Update interface
 interface TimelineRowProps {
@@ -20,6 +21,8 @@ const TimelineRow = memo(({
   variant,
   onIconClick,
 }: TimelineRowProps) => {
+  const pathname = usePathname?.() ?? "";
+  const isBookPage = pathname.includes("/en/book");
   const items = React.Children.toArray(children);
   const label = items.length > 1 ? items[0] : null;
   const content = items.length > 1 ? items.slice(1) : items;
@@ -30,7 +33,7 @@ const TimelineRow = memo(({
       {/* ICON RAIL */}
       <div className="flex flex-col items-center mt-1 lg:mt-7">
         {showConnectorAbove ? (
-          <div className="w-0.5 flex-1 bg-primary" />
+          <div className={`w-0.5 flex-1 ${isBookPage ? "bg-white" : "bg-primary"}`} />
         ) : (
           <div className="flex-1" />
         )}
@@ -50,7 +53,7 @@ const TimelineRow = memo(({
         </div>
 
         {showConnectorBelow ? (
-          <div className="w-0.5 flex-1 bg-primary" />
+          <div className={`w-0.5 flex-1 ${isBookPage ? "bg-white" : "bg-primary"}`} />
         ) : (
           <div className="flex-1" />
         )}

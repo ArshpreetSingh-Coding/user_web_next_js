@@ -2,6 +2,7 @@ import apiClient from "@/lib/api/client";
 import { API_ENDPOINTS } from "@/lib/api/endpoints";
 import { mapsService } from "@/lib/google-maps/GoogleMapsService";
 import type { FindDriversResponse, InsertPickupScheduleResponse } from "@/types";
+import { toast } from "sonner";
 
 export interface FetchConfigurationParams {
   latitude: number;
@@ -10,6 +11,7 @@ export interface FetchConfigurationParams {
 
 export interface FetchConfigurationResponse {
   data: {
+    flag?: any,
     services?: any[];
     currency?: string;
     offset?: number;
@@ -41,7 +43,11 @@ export const bookingService = {
         longitude: params.longitude,
       }
     );
-
+    // console.log("config response::", response?.data.flag);
+    if(response?.data?.flag === 144){
+      toast.error('Please select valid city');
+      return response?.data;
+    }
     if (response.data?.data?.services) {
       response.data.data.services = response.data.data.services.filter(
         (s: any) => s.type !== "rental" && s.type !== "car_rental"

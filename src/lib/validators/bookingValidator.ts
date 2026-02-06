@@ -13,12 +13,101 @@ export interface ValidationResult {
   error?: string;
 }
 
+
+const isSameLocation = (a: any, b: any) => {
+  if (!a || !b) return false;
+
+  const addrA = String(a.address ?? a.chosen_address ?? "").trim();
+  const addrB = String(b.address ?? b.chosen_address ?? "").trim();
+
+  if (addrA && addrB && addrA === addrB) return true;
+
+  const latA = a.lat ?? a.latitude;
+  const lngA = a.lng ?? a.longitude;
+  const latB = b.lat ?? b.latitude;
+  const lngB = b.lng ?? b.longitude;
+
+  if (
+    latA !== undefined &&
+    latB !== undefined &&
+    lngA !== undefined &&
+    lngB !== undefined
+  ) {
+    return latA === latB && lngA === lngB;
+  }
+
+  return false;
+};
+
+const isValidCoordinate = (lat?: number, lng?: number) =>
+  Number.isFinite(lat) &&
+  Number.isFinite(lng) &&
+  lat! >= -90 && lat! <= 90 &&
+  lng! >= -180 && lng! <= 180;
+
 export const bookingValidator = {
+    validateRouteSequence(
+    pickup: Location | null,
+    stops: Stop[],
+    destination: Location | null
+  ): ValidationResult {
+
+    const routePoints: any[] = [
+      { label: "Pickup", data: pickup },
+      ...stops.map((s, i) => ({ label: `Stop ${i + 1}`, data: s })),
+      { label: "Destination", data: destination },
+    ];
+
+    // Validate presence of all route points
+    for (const point of routePoints) {
+      const loc = point.data;
+      const lat = (loc as any)?.lat ?? (loc as any)?.latitude;
+      const lng = (loc as any)?.lng ?? (loc as any)?.longitude;
+      const address = loc?.address ?? loc?.chosen_address;
+
+      if (!address || !isValidCoordinate(lat, lng)) {
+        return {
+          isValid: false,
+          error: `Please select a valid ${point.label.toLowerCase()} location`,
+        };
+      }
+    }
+
+    // Validate adjacent points in route order (THIS FIXES YOUR BUG)
+    for (let i = 0; i < routePoints.length - 1; i++) {
+      const current = routePoints[i];
+      const next = routePoints[i + 1];
+
+      if (isSameLocation(current.data, next.data)) {
+        return {
+          isValid: false,
+          error: `${current.label} cannot be the same as ${next.label}`,
+        };
+      }
+    }
+
+    // Detect duplicates anywhere in route
+    for (let i = 0; i < routePoints.length; i++) {
+      for (let j = i + 1; j < routePoints.length; j++) {
+        if (isSameLocation(routePoints[i].data, routePoints[j].data)) {
+          return {
+            isValid: false,
+            error: `${routePoints[j].label} duplicates ${routePoints[i].label}`,
+          };
+        }
+      }
+    }
+
+    return { isValid: true };
+  },
+
   /**
    * Validate pickup location
    */
   validatePickup(pickup: Location | null): ValidationResult {
-    if (!pickup?.lat || !pickup?.lng || !pickup?.address) {
+    const lat = (pickup as any)?.lat ?? (pickup as any)?.latitude;
+    const lng = (pickup as any)?.lng ?? (pickup as any)?.longitude;
+    if (!pickup || !pickup?.address || !isValidCoordinate(lat, lng)) {
       return {
         isValid: false,
         error: "Please select a valid pickup location",
@@ -31,26 +120,13 @@ export const bookingValidator = {
    * Validate destination location
    */
   validateDestination(destination: Location | null): ValidationResult {
-    if (!destination?.lat || !destination?.lng || !destination?.address) {
+    const lat = (destination as any)?.lat ?? (destination as any)?.latitude;
+    const lng = (destination as any)?.lng ?? (destination as any)?.longitude;
+    if (!destination || !destination?.address || !isValidCoordinate(lat, lng)) {
       return {
         isValid: false,
         error: "Please select a valid destination",
       };
-    }
-    return { isValid: true };
-  },
-
-  /**
-   * Validate all stops
-   */
-  validateStops(stops: Stop[]): ValidationResult {
-    for (let i = 0; i < stops.length; i++) {
-      if (!stops[i].latitude || !stops[i].longitude || !stops[i].chosen_address) {
-        return {
-          isValid: false,
-          error: `Please select a valid location for stop ${i + 1}`,
-        };
-      }
     }
     return { isValid: true };
   },
@@ -93,10 +169,14 @@ export const bookingValidator = {
       return destinationValidation;
     }
 
-    // Validate stops
-    const stopsValidation = this.validateStops(data.stops);
-    if (!stopsValidation.isValid) {
-      return stopsValidation;
+    // Validate stops (also check against pickup/destination and duplicates)
+    const routeValidation = this.validateRouteSequence(
+      data.pickup,
+      data.stops,
+      data.destination
+    );
+    if (!routeValidation.isValid) {
+      return routeValidation;
     }
 
     // Validate scheduled time
