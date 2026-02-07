@@ -129,6 +129,13 @@ export function ModifyRideDialog({ open, onOpenChange, ride, onModifySuccess }: 
             return;
         }
 
+        // Validate that pickup and drop locations are not the same
+        if (pickupAddress.trim().toLowerCase() === dropAddress.trim().toLowerCase() || 
+            (pickupLat === dropLat && pickupLng === dropLng)) {
+            toast.error(t("Pickup and destination cannot be the same"));
+            return;
+        }
+
         try {
             setIsSubmitting(true);
 

@@ -88,13 +88,14 @@ export async function fetchOperatorParams(sessionDetails: any): Promise<DefaultR
     // console.log("response fetchOperatorParams", response?.data.data.autos_panel_theme);
 
 
-  console.log('Fetch operator params response:', response?.data.data);
+  // console.log('Fetch operator params response:', response?.data.data);
     if (response?.status === 200) {
       const data = response?.data.data;
       
       // Parse user_web_config if it exists
       if (data.user_web_config) {
         const parsedConfig = getUserWebConfig(data.user_web_config);
+        console.log("Parsed Config:::", parsedConfig);
         data.user_web_config = parsedConfig;
       }
       

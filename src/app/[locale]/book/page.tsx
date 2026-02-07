@@ -425,7 +425,7 @@ export default function BookingPage() {
                     <div className="border border-gray-200 rounded-lg">
                     <button
                       onClick={() => setIsBookingDetailsOpen(!isBookingDetailsOpen)}
-                      className="w-full flex items-center justify-between p-3 sm:p-4 text-left hover:bg-gray-50 transition-colors rounded-lg"
+                      className="w-full flex items-center justify-between p-5 sm:p-5 text-left hover:bg-gray-50 transition-colors rounded-lg"
                     >
                       <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Book for someone else (Optional)</h3>
                       <svg
@@ -443,7 +443,7 @@ export default function BookingPage() {
                         isBookingDetailsOpen ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
                       }`}
                     >
-                      <div className="px-4 pb-4 space-y-3">
+                      <div className="px-4 pb-4 space-y-3 mt-3">
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                           <input
                             type="text"
@@ -568,6 +568,15 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+
+      {/* Desktop hanging sticky button - shown when ride is selected */}
+      {selectedRegion && (
+        <div className="hidden sm:block fixed bottom-20 right-6 z-10">
+          <ActionButton onClick={onNext} className="px-8 py-3 text-base justify-center flex h-12 bg-primary hover:bg-primary/90 shadow-lg rounded-lg">
+            {"Next"}
+          </ActionButton>
+        </div>
+      )}
 
       <div className="fixed bottom-0 left-0 right-0 z-10 w-full py-3 px-4 block sm:hidden bg-white shadow-[0_-8px_24px_rgba(0,0,0,0.12)]">
         <ActionButton onClick={onNext} className="w-[90%] px-2 text-lg justify-center mx-auto flex h-9.50!">

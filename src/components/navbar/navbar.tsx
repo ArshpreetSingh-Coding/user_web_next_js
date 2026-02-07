@@ -17,6 +17,7 @@ import type { SignupData } from '@/types';
 import { toast } from "sonner";
 import { navigateWithLoader } from "@/lib/utils/navigationLoader";
 import { useOperatorParamsStore } from '@/lib/operatorParamsStore';
+import { openHippoChat } from '@/lib/hippo/hippo.service';
 
 export default function Navbar() {
   const { t } = useTranslations();
@@ -55,16 +56,14 @@ export default function Navbar() {
   const storeLogoUrl = useOperatorParamsStore(
     (state) => state.data.operatorDetails?.[0]?.logo_url || null
   );
-
+  const userWebLogo = useOperatorParamsStore(state => state.data.user_web_config?.logo_url || null);
+  console.log("user web logo::::->", userWebLogo);
   // Handle hydration and custom events
   useEffect(() => {
     setMounted(true);
-
-    // Set logo from operator params store
-    if (storeLogoUrl) {
-      // console.log('Navbar: Setting operator logo from store:', storeLogoUrl);
-      // setLogoUrl(storeLogoUrl);
-      setLogoUrl('/black-badge.png')
+    const selectedLogo = userWebLogo || storeLogoUrl;
+    if (selectedLogo) {
+      setLogoUrl(selectedLogo);
     }
 
     const handleOpenLogin = () => {
@@ -75,7 +74,7 @@ export default function Navbar() {
     return () => {
       window.removeEventListener('open-login', handleOpenLogin);
     };
-  }, [storeLogoUrl]);
+  }, [userWebLogo, storeLogoUrl]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -164,8 +163,7 @@ export default function Navbar() {
         navigateWithLoader(router, target);
       }
     } else if (item.key === 'support') {
-      const locale = params?.locale || 'en';
-      navigateWithLoader(router, `/${locale}/support`);
+      openHippoChat();
     } else {
       // Default behavior for other links if any
       router.push(`/#`);

@@ -10,6 +10,7 @@ export interface FetchConfigurationParams {
 }
 
 export interface FetchConfigurationResponse {
+  flag?: any;
   data: {
     flag?: any,
     services?: any[];
@@ -45,7 +46,7 @@ export const bookingService = {
     );
     // console.log("config response::", response?.data.flag);
     if(response?.data?.flag === 144){
-      toast.error('Please select valid city');
+      toast.error('Selected city is outside the service area');
       return response?.data;
     }
     if (response.data?.data?.services) {

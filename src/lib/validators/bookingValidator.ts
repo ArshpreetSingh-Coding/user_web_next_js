@@ -187,4 +187,11 @@ export const bookingValidator = {
 
     return { isValid: true };
   },
+
+  /**
+   * Validate stops only (convenience wrapper for legacy callers)
+   */
+  validateStops(stops: Stop[], pickup: Location | null, destination: Location | null): ValidationResult {
+    return this.validateRouteSequence(pickup, stops, destination);
+  },
 };

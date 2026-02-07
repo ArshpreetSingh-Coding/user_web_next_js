@@ -12,6 +12,7 @@ import Navbar from '@/components/navbar/navbar';
 import { GoogleMapsLoader } from '@/components/shared/GoogleMapsLoader';
 import { ThemeProvider } from '@/components/shared/ThemeProvider';
 import { Toaster } from '@/components/ui/sonner';
+import HippoProvider from '@/components/providers/HippoProvider';
 import { runInitTasks } from '@/lib/init/initTasks';
 import { redirect } from 'next/navigation';
 import ClientSessionHydrator from '@/components/shared/ClientSessionHydrator';
@@ -62,6 +63,7 @@ export default async function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider>
+          <HippoProvider />
           <BookingNavigationGuard />
           <ClientSessionHydrator session={initResult.sessionDetails} />
           <GoogleMapsLoader apiKey={(initResult.googleMapsKey || '')} />

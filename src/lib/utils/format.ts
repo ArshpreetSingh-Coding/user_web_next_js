@@ -1,8 +1,10 @@
 import { CURRENCY, DATE_FORMATS } from './constants';
+import { useOperatorParamsStore } from '@/lib/operatorParamsStore';
 
 /**
  * Format currency value
  */
+const operatorCurrency = useOperatorParamsStore(state => state.data.user_web_config?.currency || state.data.user_web_config?.currency_symbol);
 export function formatCurrency(amount: number, currency = CURRENCY.SYMBOL): string {
   return `${currency}${amount.toFixed(2)}`;
 }

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import CouponPaymentCard from "@/components/CouponPaymentCard";
 import { AddCardModal } from "@/components/payment/AddCardModal";
 import { motion, AnimatePresence } from "framer-motion";
+import { useOperatorParamsStore } from "@/lib/operatorParamsStore";
 
 interface RechargeWalletModalProps {
   isOpen: boolean;
@@ -43,6 +44,11 @@ export function RechargeWalletModal({
   } = useWallet();
 
   const wasOpen = React.useRef(false);
+
+  // Operator currency from store — prefer user_web_config.currency then currency_symbol, fallback to ₹
+  const operatorCurrency = useOperatorParamsStore(
+    state => state.data?.user_web_config?.currency || state.data?.user_web_config?.currency_symbol || '₹'
+  );
 
   // Refresh payment details when modal opens
   useEffect(() => {

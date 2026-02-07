@@ -16,6 +16,7 @@ import AddStopButton from "./AddStopButton";
 import StopItem from "./StopItem";
 import { useBookingForm } from "./useBookingForm";
 import { bookingValidator } from "@/lib/validators/bookingValidator";
+import { bookingService } from "@/services/booking.service";
 import IncrementDecrement from "@/components/IncrementDecrement";
 
 import { useBookingStore } from "@/stores/booking.store";
@@ -88,6 +89,20 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
       toast.error(validation.error);
       return;
     }
+    // Validate config (service area) for pickup, stops and destination
+    try {
+      const points = [pickup, ...stops, destination].filter(Boolean) as any[];
+      for (const p of points) {
+        const cfg = await bookingService.fetchConfiguration({ latitude: p.lat ?? p.latitude, longitude: p.lng ?? p.longitude });
+        if (cfg?.data?.flag === 144) {
+          // bookingService already toasts, but ensure we don't proceed
+          return;
+        }
+      }
+    } catch (err) {
+      toast.error("Failed to validate service area. Please try again.");
+      return;
+    }
     console.log("redirecting to the book page");
     try {
       const data = await calculateFareAndFindDrivers();
@@ -130,6 +145,20 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
       return;
     }
 
+    // Validate config (service area) before calculating fare
+    try {
+      const points = [pickup, ...stops, destination].filter(Boolean) as any[];
+      for (const p of points) {
+        const cfg = await bookingService.fetchConfiguration({ latitude: p.lat ?? p.latitude, longitude: p.lng ?? p.longitude });
+        if (cfg?.data?.flag === 144) {
+          return;
+        }
+      }
+    } catch (err) {
+      toast.error("Failed to validate service area. Please try again.");
+      return;
+    }
+
     try {
       const result = await calculateFareAndFindDrivers();
       toast.success(
@@ -164,10 +193,10 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
   // console.log("selectedService", selectedService?.type)
   return (
     <div
-      className={`w-full max-w-112.5 px-6 py-4 lg:px-6 lg:py-6 bg-primary rounded-lg flex flex-col ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
+      className={`w-full max-w-105 p-3 lg:p-4 bg-primary rounded-lg lg:rounded-xl flex flex-col ${!isBookPage ? "lg:max-h-125" : ""} ${className}  ${variant === "outline" ? "bg-white border border-border" : ""}`}
     >
       <h2
-        className={`text-sm lg:text-[20px] font-semibold text-white mb-3 lg:mb-5 shrink-0 ${variant === "outline" ? "text-black!" : ""}`}
+        className={`text-base lg:text-xl font-semibold text-white mb-2 lg:mb-4 shrink-0 ${variant === "outline" ? "text-black!" : ""}`}
       >
         Where do you want to Go?
       </h2>
@@ -204,24 +233,24 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
             type="button"
             onClick={() => setShowOtherOptions(!showOtherOptions)}
             variant="ghost"
-            className={`w-full justify-between h-auto p-2 text-sm ${variant === "outline" ? "text-gray-700 hover:bg-gray-50" : "text-white hover:bg-white/10"}`}
+            className={`w-full justify-between h-auto p-3 ${variant === "outline" ? "text-gray-700 hover:bg-gray-50" : "text-white hover:bg-white/10"}`}
           >
             <span className="font-medium">Other Options</span>
             {showOtherOptions ? (
-              <ChevronUp className="h-2.5 w-2.5" />
+              <ChevronUp className="h-4 w-4" />
             ) : (
-              <ChevronDown className="h-2.5 w-2.5" />
+              <ChevronDown className="h-4 w-4" />
             )}
-          </Button>
+          </Button> 
         )}
 
         {/* Additional Options - shown when Other Options is toggled */}
         {showAdditionalOptions && (
           <div className="space-y-2 pt-1">
             {/* Luggage */}
-            <Card className={`p-2.5 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+            <Card className={`p-3 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
               <div className="flex justify-between items-center">
-                <h3 className={`text-xs font-semibold ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
+                <h3 className={`text-sm font-semibold ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
                   Add Luggage
                 </h3>
                 <IncrementDecrement
@@ -253,8 +282,8 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
 
             {/* Additional Services */}
             {isBookPage && selectedRegion && (
-              <Card className={`p-2.5 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
-                <label className={`text-xs font-semibold mb-1.5 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
+              <Card className={`p-3 ${variant === "outline" ? "border-gray-200" : "bg-white/10 border-white/20"}`}>
+                <label className={`text-sm font-semibold mb-2 block ${variant === "outline" ? "text-gray-900" : "text-white"}`}>
                   Additional Services
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -279,15 +308,15 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
                           }}
                           className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
                         />
-                        <span className={`text-xs font-medium whitespace-nowrap ${
+                        <span className={`text-sm font-medium whitespace-nowrap ${
                           variant === "outline" ? "text-gray-900" : "text-white"
                         }`}>
                           {svc.name}
                         </span>
                       </label>
                     ))
-                  ) : (
-                    <p className={`text-xs ${
+                    ) : (
+                    <p className={`text-sm ${
                       variant === "outline" ? "text-gray-500" : "text-white/60"
                     }`}>
                       No additional services available
@@ -299,9 +328,8 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
           </div>
         )}
       </div>
-
       <motion.div
-        className="mt-4 lg:mt-6  shrink-0"
+        className="mt-3 lg:mt-4 shrink-0"
         whileHover={mounted ? { scale: 1.02 } : undefined}
         whileTap={mounted ? { scale: 0.98 } : undefined}
       >
@@ -309,10 +337,10 @@ const RideBookingForm =   ({ className, variant }: { className?: string; variant
           onClick={handleSubmit}
           disabled={isFinding || !pickup?.address || !destination?.address}
           variant="outline"
-          className={`w-full h-9 lg:h-10 bg-white text-primary hover:bg-white hover:scale-102 hover:text-primary font-semibold text-xs lg:text-sm rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ${variant === "outline" ? "bg-primary text-white! hover:text-primary!" : ""}`}
+          className={`w-full h-9 lg:h-10 bg-white text-primary hover:bg-white hover:scale-102 hover:text-primary font-semibold text-sm lg:text-base rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 ${variant === "outline" ? "bg-primary text-white! hover:text-primary!" : ""}`}
         >
           {isFinding ? "Loading..." : isBookPage ? "Calculate Fare" : "Book Now"}
-          <ArrowRight className="w-3 h-3 ml-1" />
+          <ArrowRight className="w-4 h-4 ml-1" />
         </Button>
       </motion.div>
     </div>

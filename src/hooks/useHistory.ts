@@ -182,14 +182,19 @@ export function useHistory(errorMessage: string, rideType?: string) {
                     } else {
                         setRides(mappedRides);
                     }
-
-                    // Check if there are more items to load
-                    // setHasMore(mappedRides.length === ITEMS_PER_PAGE);
                 }
 
                 // Update history size if available
                 if (response.history_size !== undefined) {
                     setHistorySize(response.history_size);
+                    // Calculate if there are more items to load based on history_size
+                    const totalLoaded = (currentPage + 1) * ITEMS_PER_PAGE;
+                    setHasMore(totalLoaded < response.history_size);
+                } else {
+                    // Fallback: check if we got a full page (if API doesn't return history_size)
+                    if (response.data && Array.isArray(response.data)) {
+                        setHasMore(response.data.length === ITEMS_PER_PAGE);
+                    }
                 }
             } catch (error) {
                 if (axios.isCancel(error)) {
