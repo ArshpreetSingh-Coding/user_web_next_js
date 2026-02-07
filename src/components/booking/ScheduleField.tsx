@@ -144,7 +144,7 @@ const ScheduleField = memo(({ value, onChange, className, variant }: ScheduleFie
             <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-[280px] p-0 bg-white border-neutral-200 shadow-2xl rounded-2xl overflow-hidden" align="start" sideOffset={8}>
+        <PopoverContent className="w-[280px] p-0 bg-white border-neutral-200 shadow-2xl rounded-2xl overflow-visible" align="start" sideOffset={8}>
           <div className="p-3 border-b border-neutral-100 bg-neutral-50/50">
             <h4 className="font-bold text-sm text-neutral-900">Choose Pickup Time</h4>
             <p className="text-[10px] text-neutral-500">Plan your ride in advance</p>
@@ -161,7 +161,7 @@ const ScheduleField = memo(({ value, onChange, className, variant }: ScheduleFie
             />
           </div>
 
-          <div className="p-3 bg-neutral-50/80 border-t border-neutral-100">
+          <div className="p-3 bg-neutral-50/80 border-t border-neutral-100 z-100">
             <div className="flex items-center gap-2">
               <div className="flex-1">
                 <label className="text-[10px] font-semibold text-neutral-600 mb-1 block uppercase tracking-wider">Hour</label>

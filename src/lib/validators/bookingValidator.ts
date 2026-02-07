@@ -135,9 +135,9 @@ export const bookingValidator = {
    * Validate scheduled date time (optional - only validate if provided)
    */
   validateScheduledDateTime(scheduledDateTime: Date | null): ValidationResult {
-    // Scheduled time is optional - if not provided, it's an immediate ride
+    // Scheduled time is now required
     if (!scheduledDateTime) {
-      return { isValid: true };
+      return { isValid: false, error: "Please select a pickup date and time" };
     }
 
     const now = new Date();
