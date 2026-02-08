@@ -143,7 +143,7 @@ export function OtpDialog({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
         >
-          <DialogHeader className="space-y-2 flex-shrink-0">
+          <DialogHeader className="space-y-2 shrink-0">
           <DialogTitle className="text-xl font-semibold leading-tight text-left">
             {t("auth.loginToAccount")}
           </DialogTitle>
@@ -169,7 +169,7 @@ export function OtpDialog({
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className="flex-1 max-w-12 h-12 m-1 bg-[#F8FAFC] border-0 rounded-md text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                  className="flex-1 max-w-12 h-12 m-1 bg-[#d3d6d8] border-0 rounded-md text-center text-lg font-medium focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               ))}
             </div>

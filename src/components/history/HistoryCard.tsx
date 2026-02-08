@@ -38,6 +38,9 @@ export interface RideHistoryItem {
     isModifiable?: boolean;
     isAddressModifiable?: boolean;
     schedulerAlarmTime?: number;
+    // Rating fields for completed rides
+    driver_rating?: number;
+    is_rated_before?: 0 | 1;
 }
 
 interface HistoryCardProps {

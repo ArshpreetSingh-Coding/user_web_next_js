@@ -44,6 +44,11 @@ const nextConfig = {
         hostname: "tablabar.s3.amazonaws.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "jugnoo-autos-profile-images.s3.amazonaws.com",
+        pathname: "/**",
+      },
     ],
   },
 };

@@ -45,7 +45,7 @@ const ServiceSelector = memo(({ variant }: ServiceSelectorProps) => {
         )}>
           <SelectValue placeholder="Choose a service" />
         </SelectTrigger>
-        <SelectContent className="bg-white rounded-lg shadow-lg border border-gray-200 max-h-[300px] overflow-auto">
+        <SelectContent className="bg-white rounded-lg shadow-lg border border-gray-200 max-h-75 overflow-auto">
           {serviceData.map((service) => (
             <SelectItem
               key={service.id || service.name}
