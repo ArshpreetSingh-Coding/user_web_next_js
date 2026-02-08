@@ -32,7 +32,7 @@ export default function HomePage() {
   };
 
   const handleRegisterDriver = () => {
-    window.location.href = 'https://jmpno.app.link/76PJg8ohi0b';
+    window.open('https://jmpno.app.link/76PJg8ohi0b', '_blank');
   };
 
   return (

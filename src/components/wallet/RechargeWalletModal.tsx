@@ -109,7 +109,6 @@ export function RechargeWalletModal({
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
               >
                 <DialogTitle className="sr-only">Recharge Wallet</DialogTitle>

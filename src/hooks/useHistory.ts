@@ -67,7 +67,9 @@ export const mapApiRideToRideHistoryItem = (apiRide: ApiRideHistoryItem): RideHi
         vehicleServices: apiRide.vehicle_services || "[]",
         isModifiable: apiRide.modifiable === 1,
         isAddressModifiable: apiRide.address_modifiable === 1,
-        schedulerAlarmTime: apiRide.scheduler_alarm_time
+        schedulerAlarmTime: apiRide.scheduler_alarm_time,
+        driver_rating: Number(apiRide.driver_rating) || 0,
+        is_rated_before: (apiRide.is_rated_before as 0 | 1) || 0
     };
 };
 

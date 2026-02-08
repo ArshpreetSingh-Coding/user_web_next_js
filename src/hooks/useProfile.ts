@@ -78,13 +78,16 @@ export function useProfile() {
         image_file: avatarFile || undefined
       });
 
+      // Fetch updated profile to refresh the avatar URL
+      await fetchProfileAPI();
+
       toast.success(t('profile.updateSuccess') || 'Profile updated successfully');
       resetEditing();
     } catch (error: any) {
       console.error('❌ Profile update error:', error);
       toast.error(error.message || t('profile.updateFailed') || 'Failed to update profile');
     }
-  }, [fullName, email, avatarFile, updateProfileAPI, resetEditing]);
+  }, [fullName, email, avatarFile, updateProfileAPI, fetchProfileAPI, resetEditing]);
 
   /**
    * Handle file upload for avatar

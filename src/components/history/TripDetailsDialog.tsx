@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { RideHistoryItem } from "./HistoryCard";
 import { RateRideDialog } from "./RateRideDialog";
 import { ModifyRideDialog } from "./ModifyRideDialog";
+import { RatedDriverCard } from "./RatedDriverCard";
 import { format } from "date-fns";
 import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
 import { mapsService } from "@/lib/google-maps/GoogleMapsService";
@@ -237,16 +238,20 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
                             {/* Rate Your Trip Card - Only for Completed rides */}
                             {displayRide.status === "Completed" && (
-                                <div
-                                    onClick={() => setRatingDialogOpen(true)}
-                                    className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
-                                >
-                                    <div className="space-y-0.5">
-                                        <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
-                                        <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                                displayRide.is_rated_before ? (
+                                    <RatedDriverCard size="lg" rating={displayRide.driver_rating || 0} />
+                                ) : (
+                                    <div
+                                        onClick={() => setRatingDialogOpen(true)}
+                                        className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="space-y-0.5">
+                                            <h3 className="font-bold text-gray-900 text-base">{t("Rate Your Trip")}</h3>
+                                            <p className="text-sm text-gray-500">{t("Rate Your Trip to share feedback and add tip.")}</p>
+                                        </div>
+                                        <ChevronRight className="h-5 w-5 text-gray-400" />
                                     </div>
-                                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                                </div>
+                                )
                             )}
 
                             {/* Trip Details Card */}
@@ -346,15 +351,15 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                             )}
 
                             {/* Get Help Card */}
-                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 mb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                        <User className="h-5 w-5" />
+                                {/* <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer active:bg-gray-50 mb-8">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                            <User className="h-5 w-5" />
+                                        </div>
+                                        <h3 className="font-bold text-gray-900 text-base">{t("Get Help")}</h3>
                                     </div>
-                                    <h3 className="font-bold text-gray-900 text-base">{t("Get Help")}</h3>
-                                </div>
-                                <ChevronRight className="h-5 w-5 text-gray-400" />
-                            </div>
+                                    <ChevronRight className="h-5 w-5 text-gray-400" />
+                                </div> */}
                         </div>
                     </div>
                 </motion.div>
@@ -423,16 +428,20 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
 
                             {/* Rate Your Trip Card - Only for Completed rides */}
                             {displayRide.status === "Completed" && (
-                                <div
-                                    onClick={() => setRatingDialogOpen(true)}
-                                    className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-                                >
-                                    <div>
-                                        <h3 className="font-bold text-gray-900">Rate your Trip</h3>
-                                        <p className="text-sm text-gray-500">Rate Your Trip to share feedback and add tip.</p>
+                                displayRide.is_rated_before ? (
+                                    <RatedDriverCard size="sm" rating={displayRide.driver_rating || 0} />
+                                ) : (
+                                    <div
+                                        onClick={() => setRatingDialogOpen(true)}
+                                        className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div>
+                                            <h3 className="font-bold text-gray-900">Rate your Trip</h3>
+                                            <p className="text-sm text-gray-500">Rate Your Trip to share feedback and add tip.</p>
+                                        </div>
+                                        <ChevronRight className="h-5 w-5 text-gray-400" />
                                     </div>
-                                    <ChevronRight className="h-5 w-5 text-gray-400" />
-                                </div>
+                                )
                             )}
 
                             {/* Trip Details Card */}
@@ -566,7 +575,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                             )}
 
                             {/* Get Help */}
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
+                            {/* <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
                                 <div className="flex items-center gap-3">
                                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                                         <User className="h-4 w-4" />
@@ -574,7 +583,7 @@ export function TripDetailsDialog({ open, onOpenChange, ride }: TripDetailsDialo
                                     <h3 className="font-bold text-gray-900">{t("Get Help")}</h3>
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-gray-400" />
-                            </div>
+                            </div> */}
 
                         </div>
                     </div>

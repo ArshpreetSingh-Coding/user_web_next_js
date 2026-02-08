@@ -83,7 +83,7 @@ export function LoginDialog({
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isLoading}
-                    className="flex-[0.35] h-10 text-black bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
+                    className="flex-[0.35] h-10 text-black bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50 hover:text-black"
                   >
                     {t("common.cancel")}
                   </Button>
